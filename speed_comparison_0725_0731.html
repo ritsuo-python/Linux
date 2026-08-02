@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>速度分布比較 7/25〜7/31 — 通過車両計測</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
+<style>
+:root {
+  --bg-page:#f2f4f8;--bg-surface:#ffffff;--bg-row:#f8f9fc;
+  --text-pri:#1b2236;--text-sec:#4e5d7a;--text-mute:#7d8da8;
+  --border:#cdd3e6;--border-lt:#e4e8f2;
+  --shadow:0 1px 4px rgba(27,34,54,.07),0 4px 16px rgba(27,34,54,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg-page:#111520;--bg-surface:#1a1e2c;--bg-row:#1e2335;--text-pri:#dde2f0;--text-sec:#8a96b4;--text-mute:#5a647e;--border:#252d44;--border-lt:#1f2640;--shadow:0 1px 4px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);}
+}
+:root[data-theme="dark"]{--bg-page:#111520;--bg-surface:#1a1e2c;--bg-row:#1e2335;--text-pri:#dde2f0;--text-sec:#8a96b4;--text-mute:#5a647e;--border:#252d44;--border-lt:#1f2640;--shadow:0 1px 4px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);}
+:root[data-theme="light"]{--bg-page:#f2f4f8;--bg-surface:#ffffff;--bg-row:#f8f9fc;--text-pri:#1b2236;--text-sec:#4e5d7a;--text-mute:#7d8da8;--border:#cdd3e6;--border-lt:#e4e8f2;--shadow:0 1px 4px rgba(27,34,54,.07),0 4px 16px rgba(27,34,54,.05);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg-page);color:var(--text-pri);font-family:-apple-system,'Hiragino Sans','Yu Gothic UI','Meiryo',sans-serif;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+.page{max-width:1100px;margin:0 auto;padding:40px 24px 64px;display:flex;flex-direction:column;gap:28px;}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:20px;border-bottom:1px solid var(--border);}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);margin-bottom:6px;}
+h1{font-size:22px;font-weight:700;line-height:1.25;letter-spacing:-.02em;}
+.header-kpi{display:flex;gap:24px;flex-wrap:wrap;}
+.kpi{text-align:right;}
+.kpi-val{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;font-family:'SF Mono','Courier New',monospace;}
+.kpi-lbl{font-size:11px;color:var(--text-mute);margin-top:1px;}
+.theme-toggle{background:var(--bg-surface);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:12px;font-family:inherit;color:var(--text-sec);cursor:pointer;}
+/* cards: 4+3 layout */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.card{background:var(--bg-surface);border:1px solid var(--border-lt);border-radius:8px;padding:14px 16px 12px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:8px 8px 0 0;}
+.card.sat::before{background:#b050a0;}
+.card.sun::before{background:#7898b4;}
+.card.mon::before{background:#3d78d0;}
+.card.tue::before{background:#22b894;}
+.card.wed::before{background:#7060c8;}
+.card.thu::before{background:#dc7a10;}
+.card.fri::before{background:#cc2a18;}
+
+.card-date{{font-size:11px;font-weight:600;letter-spacing:.07em;color:var(--text-mute);margin-bottom:8px;}}
+.card-dow{{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:3px;margin-left:6px;}}
+.card-main{{display:flex;align-items:baseline;gap:6px;margin-bottom:10px;}}
+.card-count{{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;font-family:'SF Mono','Courier New',monospace;letter-spacing:-.02em;line-height:1;}}
+.card-unit{{font-size:13px;color:var(--text-mute);}}
+.card-stats{{display:flex;flex-direction:column;gap:2px;}}
+.card-stat{{display:flex;justify-content:space-between;font-size:12px;color:var(--text-sec);}}
+.card-stat strong{{font-weight:600;font-variant-numeric:tabular-nums;font-family:'SF Mono','Courier New',monospace;color:var(--text-pri);font-size:11px;}}
+.hand-badge{{font-size:10px;font-weight:600;padding:1px 5px;border-radius:3px;background:rgba(232,128,32,.18);color:#b06010;margin-left:3px;}}
+.chart-panel{{background:var(--bg-surface);border:1px solid var(--border-lt);border-radius:8px;padding:22px 22px 18px;box-shadow:var(--shadow);}}
+.panel-header{{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:18px;}}
+.panel-title{{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-sec);}}
+.legend{{display:flex;gap:12px;flex-wrap:wrap;}}
+.legend-item{{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-sec);}}
+.legend-dot{{width:10px;height:10px;border-radius:50%;flex-shrink:0;}}
+.chart-wrap{{position:relative;height:300px;}}
+.chart-note{{margin-top:10px;font-size:11px;color:var(--text-mute);text-align:right;}}
+.analysis-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}}
+.analysis-card{{background:var(--bg-surface);border:1px solid var(--border-lt);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow);}}
+.analysis-head{{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border-lt);}}
+.analysis-color{{width:4px;height:30px;border-radius:2px;flex-shrink:0;}}
+.analysis-title{{font-size:14px;font-weight:700;line-height:1.2;}}
+.analysis-sub{{font-size:11px;color:var(--text-mute);margin-top:2px;}}
+.analysis-body{{font-size:12.5px;line-height:1.72;color:var(--text-sec);}}
+.highlight-box{{background:var(--bg-row);border-left:3px solid var(--border);border-radius:0 4px 4px 0;padding:6px 10px;margin:7px 0 0;font-size:11.5px;color:var(--text-sec);}}
+.dist-section{{background:var(--bg-surface);border:1px solid var(--border-lt);border-radius:8px;padding:22px;box-shadow:var(--shadow);overflow-x:auto;}}
+table{{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;font-family:'SF Mono','Courier New',monospace;}}
+thead th{{text-align:right;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-mute);padding:5px 9px;border-bottom:1px solid var(--border);white-space:nowrap;}}
+thead th:first-child{{text-align:left;}}
+tbody tr{{border-bottom:1px solid var(--border-lt);}}
+tbody tr:hover{{background:var(--bg-row);}}
+tbody tr:last-child{{border-bottom:none;}}
+tbody td{{text-align:right;padding:5px 9px;color:var(--text-sec);}}
+tbody td:first-child{{text-align:left;color:var(--text-mute);font-size:11px;}}
+tbody td.val{{font-weight:600;color:var(--text-pri);}}
+tbody td.zero{{color:var(--border);}}
+tfoot tr{{border-top:2px solid var(--border);}}
+tfoot td{{text-align:right;padding:5px 9px;font-weight:700;font-variant-numeric:tabular-nums;font-family:'SF Mono','Courier New',monospace;color:var(--text-pri);}}
+tfoot td:first-child{{text-align:left;font-size:11px;color:var(--text-sec);}}
+.footer-note{{font-size:12px;color:var(--text-mute);display:flex;flex-direction:column;gap:3px;padding-top:8px;border-top:1px solid var(--border-lt);}}
+.footer-note strong{{color:var(--text-sec);}}
+@media(max-width:800px){{.cards{{grid-template-columns:repeat(3,1fr);}}.analysis-grid{{grid-template-columns:1fr 1fr;}}.chart-wrap{{height:240px;}}}}
+@media(max-width:520px){{.cards{{grid-template-columns:1fr 1fr;}}.analysis-grid{{grid-template-columns:1fr;}}.header-kpi{{display:none;}}}}
+@media(prefers-reduced-motion:reduce){{*{{transition:none !important;}}}}
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <div>
+    <p class="eyebrow">通過車両速度計測　2026年7月</p>
+    <h1>速度分布比較　7月25日〜31日</h1>
+  </div>
+  <div class="header-kpi">
+    <div class="kpi"><div class="kpi-val">{TOTAL_ALL}台</div><div class="kpi-lbl">7日間合計</div></div>
+    <div class="kpi"><div class="kpi-val">{AVG_SPEED} km/h</div><div class="kpi-lbl">加重平均速度</div></div>
+    <div class="kpi"><div class="kpi-val">{TOTAL_HAND}台</div><div class="kpi-lbl">手入力計</div></div>
+  </div>
+  <button class="theme-toggle" onclick="toggleTheme()">テーマ切替</button>
+</header>
+<div class="cards">
+  <div class="card sat">
+    <div class="card-date">7/25<span class="card-dow" style="background:color-mix(in srgb,#b050a0 15%,transparent);color:#b050a0;">土</span></div>
+    <div class="card-main"><span class="card-count" style="color:#b050a0;">50</span><span class="card-unit">台</span></div>
+    <div class="card-stats">
+      <div class="card-stat"><span>平均速度</span><strong>35.6 km/h</strong></div>
+      <div class="card-stat"><span>手入力</span><strong>16台<span class="hand-badge">32%</span></strong></div>
+      <div class="card-stat"><span>実測</span><strong>34台</strong></div>
+    </div>
+  </div>
+  <div class="card sun">
+    <div class="card-date">7/26<span class="card-dow" style="background:color-mix(in srgb,#7898b4 15%,transparent);color:#7898b4;">日</span></div>
+    <div class="card-main"><span class="card-count" style="color:#7898b4;">31</span><span class="card-unit">台</span></div>
+    <div class="card-stats">
+      <div class="card-stat"><span>平均速度</span><strong>36.3 km/h</strong></div>
+      <div class="card-stat"><span>手入力</span><strong>19台<span class="hand-badge">61%</span></strong></div>
+      <div class="card-stat"><span>実測</span><strong>12台</strong></div>
+    </div>
+  </div>
+  <div class="card mon">
+    <div class="card-date">7/27<span class="card-dow" style="background:color-mix(in srgb,#3d78d0 15%,transparent);color:#3d78d0;">月</span></div>
+    <div class="card-main"><span class="card-count" style="color:#3d78d0;">73</span><span class="card-unit">台</span></div>
+    <div class="card-stats">
+      <div class="card-stat"><span>平均速度</span><strong>37.3 km/h</strong></div>
+      <div class="card-stat"><span>手入力</span><strong>11台<span class="hand-badge">15%</span></strong></div>
+      <div class="card-stat"><span>実測</span><strong>62台</strong></div>
+    </div>
+  </div>
+  <div class="card tue">
+    <div class="card-date">7/28<span class="card-dow" style="background:color-mix(in srgb,#22b894 15%,transparent);color:#22b894;">火</span></div>
+    <div class="card-main"><span class="card-count" style="color:#22b894;">67</span><span class="card-unit">台</span></div>
+    <div class="card-stats">
+      <div class="card-stat"><span>平均速度</span><strong>33.5 km/h</strong></div>
+      <div class="card-stat"><span>手入力</span><strong>13台<span class="hand-badge">19%</span></strong></div>
+      <div class="card-stat"><span>実測</span><strong>54台</strong></div>
+    </div>
+  </div>
+  <div class="card wed">
+    <div class="card-date">7/29<span class="card-dow" style="background:color-mix(in srgb,#7060c8 15%,transparent);color:#7060c8;">水</span></div>
+    <div class="card-main"><span class="card-count" style="color:#7060c8;">50</span><span class="card-unit">台</span></div>
+    <div class="card-stats">
+      <div class="card-stat"><span>平均速度</span><strong>36.5 km/h</strong></div>
+      <div class="card-stat"><span>手入力</span><strong>0台</strong></div>
+      <div class="card-stat"><span>実測</span><strong>50台</strong></div>
+    </div>
+  </div>
+  <div class="card thu">
+    <div class="card-date">7/30<span class="card-dow" style="background:color-mix(in srgb,#dc7a10 15%,transparent);color:#dc7a10;">木</span></div>
+    <div class="card-main"><span class="card-count" style="color:#dc7a10;">75</span><span class="card-unit">台</span></div>
+    <div class="card-stats">
+      <div class="card-stat"><span>平均速度</span><strong>34.1 km/h</strong></div>
+      <div class="card-stat"><span>手入力</span><strong>11台<span class="hand-badge">15%</span></strong></div>
+      <div class="card-stat"><span>実測</span><strong>64台</strong></div>
+    </div>
+  </div>
+  <div class="card fri">
+    <div class="card-date">7/31<span class="card-dow" style="background:color-mix(in srgb,#cc2a18 15%,transparent);color:#cc2a18;">金</span></div>
+    <div class="card-main"><span class="card-count" style="color:#cc2a18;">78</span><span class="card-unit">台</span></div>
+    <div class="card-stats">
+      <div class="card-stat"><span>平均速度</span><strong>35.1 km/h</strong></div>
+      <div class="card-stat"><span>手入力</span><strong>17台<span class="hand-badge">22%</span></strong></div>
+      <div class="card-stat"><span>実測</span><strong>61台</strong></div>
+    </div>
+  </div>
+</div>
+<div class="chart-panel">
+  <div class="panel-header">
+    <span class="panel-title">速度帯別台数（5km/h 区間）</span>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#b050a0"></div>7/25 土</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7898b4"></div>7/26 日</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3d78d0"></div>7/27 月</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#22b894"></div>7/28 火</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7060c8"></div>7/29 水</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#dc7a10"></div>7/30 木</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#cc2a18"></div>7/31 金</div>
+    </div>
+  </div>
+  <div class="chart-wrap"><canvas id="speedChart"></canvas></div>
+  <p class="chart-note">※ 35–39 km/h 帯は手入力による固定値を含む（特に 7/25: 13台、7/26: 19台、7/27: 11台、7/31: 12台）</p>
+</div>
+<div class="analysis-grid">
+  <div class="analysis-card">
+    <div class="analysis-head">
+      <div class="analysis-color" style="background:#b050a0;"></div>
+      <div>
+        <div class="analysis-title">7/25（土）</div>
+        <div class="analysis-sub">50台 ／ 平均 35.6 km/h ／ 手入力 16台</div>
+      </div>
+    </div>
+    <div class="analysis-body">
+      <p>手入力16台（32%）のうちあじふく13台がすべて35km/h固定、白箱バン3台が30km/h固定。35–39帯（20台）はこのバイアスで膨らんでいる。純実測34台は30–34帯を中心に分散しており、土曜のゆったりした交通流が実勢。</p>
+      <div class="highlight-box" style="border-left-color:#b050a0;">実測34台の重心は30–34帯。週最少台数タイ（7/29と同数50台）。</div>
+    </div>
+  </div>
+  <div class="analysis-card">
+    <div class="analysis-head">
+      <div class="analysis-color" style="background:#7898b4;"></div>
+      <div>
+        <div class="analysis-title">7/26（日）</div>
+        <div class="analysis-sub">31台 ／ 平均 36.3 km/h ／ 手入力 19台</div>
+      </div>
+    </div>
+    <div class="analysis-body">
+      <p>手入力19台（61%）が35–39帯に固定集中するため分布形状は手入力主導。実測12台のみ参照すると25–29帯と45–49帯に分散。日曜の低交通量を反映して7日間最少31台。</p>
+      <div class="highlight-box" style="border-left-color:#7898b4;">7日間最少台数（31台）。純実測12台のみが実勢。</div>
+    </div>
+  </div>
+  <div class="analysis-card">
+    <div class="analysis-head">
+      <div class="analysis-color" style="background:#3d78d0;"></div>
+      <div>
+        <div class="analysis-title">7/27（月）</div>
+        <div class="analysis-sub">73台 ／ 平均 37.3 km/h ／ 手入力 11台</div>
+      </div>
+    </div>
+    <div class="analysis-body">
+      <p>7日間で最多の73台。分布幅が最広で10km/h台〜55km/h台まで全域に計測車両あり。月曜の週明け効果で台数が集中、50km/h超が10台（14%）と最多。手入力率15%で信頼性は高い。</p>
+      <div class="highlight-box" style="border-left-color:#3d78d0;">50km/h超: 10台（14%）。7日間最広分布。</div>
+    </div>
+  </div>
+  <div class="analysis-card">
+    <div class="analysis-head">
+      <div class="analysis-color" style="background:#22b894;"></div>
+      <div>
+        <div class="analysis-title">7/28（火）</div>
+        <div class="analysis-sub">67台 ／ 平均 33.5 km/h ／ 手入力 13台</div>
+      </div>
+    </div>
+    <div class="analysis-body">
+      <p>7日間で最低の平均速度（33.5 km/h）。手入力13台の内訳はあじふく×7（35km/h）＋白箱バン×6（40km/h）で、35–39・40–44帯が人工的に厚くなる。20–29帯に21台（31%）と低速車両が多い日。</p>
+      <div class="highlight-box" style="border-left-color:#22b894;">20–29km/h帯: 21台（31%）。7日間最低平均速度。</div>
+    </div>
+  </div>
+  <div class="analysis-card">
+    <div class="analysis-head">
+      <div class="analysis-color" style="background:#7060c8;"></div>
+      <div>
+        <div class="analysis-title">7/29（水）</div>
+        <div class="analysis-sub">50台 ／ 平均 36.5 km/h ／ 手入力 0台</div>
+      </div>
+    </div>
+    <div class="analysis-body">
+      <p>7日間唯一の手入力ゼロ。純実測データのため最も信頼性が高い基準日。30–39帯に27台（54%）が集中し、正規分布に近い形状。7/25〜7/31の実勢速度プロファイル基準として活用できる。</p>
+      <div class="highlight-box" style="border-left-color:#7060c8;">純実測基準日。30–39帯に54%集中。</div>
+    </div>
+  </div>
+  <div class="analysis-card">
+    <div class="analysis-head">
+      <div class="analysis-color" style="background:#dc7a10;"></div>
+      <div>
+        <div class="analysis-title">7/30（木）</div>
+        <div class="analysis-sub">75台 ／ 平均 34.1 km/h ／ 手入力 11台</div>
+      </div>
+    </div>
+    <div class="analysis-body">
+      <p>30–34帯に29台（39%）と突出したピーク。手入力11台の内訳は_840_×1（35km/h）＋_850_×10（30〜47km/h混在）で30–34帯集中に一部寄与。週後半木曜として台数75台は多め。</p>
+      <div class="highlight-box" style="border-left-color:#dc7a10;">30–34帯ピーク29台（39%）が7日間最大単一ビン。</div>
+    </div>
+  </div>
+  <div class="analysis-card">
+    <div class="analysis-head">
+      <div class="analysis-color" style="background:#cc2a18;"></div>
+      <div>
+        <div class="analysis-title">7/31（金）</div>
+        <div class="analysis-sub">78台 ／ 平均 35.1 km/h ／ 手入力 17台</div>
+      </div>
+    </div>
+    <div class="analysis-body">
+      <p>7日間最多78台、かつ35–39帯ピーク30台。手入力17台（_840_×6＝35km/h、_850_×11＝25〜38km/h混在）が35–39帯を押し上げている。週末金曜の高需要と手入力バイアスが重なった形。</p>
+      <div class="highlight-box" style="border-left-color:#cc2a18;">7日間最多台数（78台）。35–39帯30台も最大。</div>
+    </div>
+  </div>
+</div>
+<div class="dist-section">
+  <div class="panel-title" style="margin-bottom:16px;">速度帯別台数　一覧表</div>
+  <table>
+    <thead><tr><th>速度帯</th>
+      <th style="color:#b050a0">7/25 土</th>
+      <th style="color:#7898b4">7/26 日</th>
+      <th style="color:#3d78d0">7/27 月</th>
+      <th style="color:#22b894">7/28 火</th>
+      <th style="color:#7060c8">7/29 水</th>
+      <th style="color:#dc7a10">7/30 木</th>
+      <th style="color:#cc2a18">7/31 金</th>
+      <th>合計</th>
+    </tr></thead>
+    <tbody>
+    <tr><td>10–14 km/h</td>
+      <td class="zero">—</td>
+      <td class="zero">—</td>
+      <td class="zero">—</td>
+      <td class="val">1</td>
+      <td class="zero">—</td>
+      <td class="zero">—</td>
+      <td class="val">1</td>
+      <td class="val">2</td>
+    </tr>
+    <tr><td>15–19 km/h</td>
+      <td class="zero">—</td>
+      <td class="zero">—</td>
+      <td class="val">1</td>
+      <td class="val">1</td>
+      <td class="val">1</td>
+      <td class="val">2</td>
+      <td class="val">1</td>
+      <td class="val">6</td>
+    </tr>
+    <tr><td>20–24 km/h</td>
+      <td class="zero">—</td>
+      <td class="zero">—</td>
+      <td class="val">3</td>
+      <td class="val">9</td>
+      <td class="val">2</td>
+      <td class="val">6</td>
+      <td class="val">2</td>
+      <td class="val">22</td>
+    </tr>
+    <tr><td>25–29 km/h</td>
+      <td class="val">4</td>
+      <td class="val">2</td>
+      <td class="val">11</td>
+      <td class="val">12</td>
+      <td class="val">4</td>
+      <td class="val">4</td>
+      <td class="val">11</td>
+      <td class="val">48</td>
+    </tr>
+    <tr><td>30–34 km/h</td>
+      <td class="val">15</td>
+      <td class="val">2</td>
+      <td class="val">12</td>
+      <td class="val">9</td>
+      <td class="val">13</td>
+      <td class="val">29</td>
+      <td class="val">15</td>
+      <td class="val">95</td>
+    </tr>
+    <tr><td>35–39 km/h</td>
+      <td class="val">20</td>
+      <td class="val">22</td>
+      <td class="val">19</td>
+      <td class="val">19</td>
+      <td class="val">14</td>
+      <td class="val">15</td>
+      <td class="val">30</td>
+      <td class="val">139</td>
+    </tr>
+    <tr><td>40–44 km/h</td>
+      <td class="val">7</td>
+      <td class="val">1</td>
+      <td class="val">8</td>
+      <td class="val">11</td>
+      <td class="val">7</td>
+      <td class="val">14</td>
+      <td class="val">8</td>
+      <td class="val">56</td>
+    </tr>
+    <tr><td>45–49 km/h</td>
+      <td class="val">4</td>
+      <td class="val">4</td>
+      <td class="val">9</td>
+      <td class="val">3</td>
+      <td class="val">5</td>
+      <td class="val">3</td>
+      <td class="val">8</td>
+      <td class="val">36</td>
+    </tr>
+    <tr><td>50–54 km/h</td>
+      <td class="zero">—</td>
+      <td class="zero">—</td>
+      <td class="val">8</td>
+      <td class="val">2</td>
+      <td class="val">4</td>
+      <td class="val">2</td>
+      <td class="val">2</td>
+      <td class="val">18</td>
+    </tr>
+    <tr><td>55–59 km/h</td>
+      <td class="zero">—</td>
+      <td class="zero">—</td>
+      <td class="val">2</td>
+      <td class="zero">—</td>
+      <td class="zero">—</td>
+      <td class="zero">—</td>
+      <td class="zero">—</td>
+      <td class="val">2</td>
+    </tr>
+    </tbody>
+    <tfoot><tr>
+      <td>合計</td>
+      <td>50</td>
+      <td>31</td>
+      <td>73</td>
+      <td>67</td>
+      <td>50</td>
+      <td>75</td>
+      <td>78</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>424</td>
+    </tr></tfoot>
+  </table>
+</div>
+<div class="footer-note">
+  <p><strong>手入力：</strong>ms欄 <code>_840_</code>（あじふく）または <code>_850_</code>（白箱バン）のファイル。速度は代表固定値で分布に反映済み。7日間手入力合計 87台。</p>
+  <p><strong>除外：</strong><code>*_line1.jpg</code> / <code>*_line2.jpg</code>（トリガー画像）全集計から除外済み。</p>
+  <p><strong>データ取得：</strong><code>/Users/fujiiritsuo/track-photo/</code> — 集計日 2026-07-31</p>
+</div>
+
+<script>
+const BINS=["10–14", "15–19", "20–24", "25–29", "30–34", "35–39", "40–44", "45–49", "50–54", "55–59"];
+const DAYS=[{label:"7/25 土",color:"#b050a0",data:[0, 0, 0, 4, 15, 20, 7, 4, 0, 0]},{label:"7/26 日",color:"#7898b4",data:[0, 0, 0, 2, 2, 22, 1, 4, 0, 0]},{label:"7/27 月",color:"#3d78d0",data:[0, 1, 3, 11, 12, 19, 8, 9, 8, 2]},{label:"7/28 火",color:"#22b894",data:[1, 1, 9, 12, 9, 19, 11, 3, 2, 0]},{label:"7/29 水",color:"#7060c8",data:[0, 1, 2, 4, 13, 14, 7, 5, 4, 0]},{label:"7/30 木",color:"#dc7a10",data:[0, 2, 6, 4, 29, 15, 14, 3, 2, 0]},{label:"7/31 金",color:"#cc2a18",data:[1, 1, 2, 11, 15, 30, 8, 8, 2, 0]}];
+function buildChart(){
+  const isDark=document.documentElement.dataset.theme==='dark'
+    ||(document.documentElement.dataset.theme===''&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const gridC=isDark?'rgba(255,255,255,.07)':'rgba(0,0,0,.06)';
+  const tickC=isDark?'#5a647e':'#8da0b8';
+  if(window._chart)window._chart.destroy();
+  window._chart=new Chart(document.getElementById('speedChart'),{
+    type:'line',
+    data:{labels:BINS,datasets:DAYS.map(d=>({'label':d.label,'data':d.data,
+      'borderColor':d.color,'backgroundColor':d.color+'16',
+      'pointBackgroundColor':d.color,'tension':.35,
+      'borderWidth':2.5,'pointRadius':4,'pointHoverRadius':6}))
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{
+        backgroundColor:isDark?'#1a1e2c':'#fff',
+        borderColor:isDark?'#252d44':'#cdd3e6',borderWidth:1,
+        titleColor:isDark?'#dde2f0':'#1b2236',
+        bodyColor:isDark?'#8a96b4':'#4e5d7a',padding:10,
+        callbacks:{label:ctx=>' '+ctx.dataset.label+'：'+ctx.parsed.y+' 台'}
+      }},
+      scales:{
+        x:{grid:{color:gridC},ticks:{color:tickC,font:{size:11,family:'monospace'}},
+           title:{display:true,text:'速度（km/h）',color:tickC,font:{size:11}}},
+        y:{grid:{color:gridC},ticks:{color:tickC,font:{size:11},stepSize:5},
+           beginAtZero:true,title:{display:true,text:'台数',color:tickC,font:{size:11}}}
+      }
+    }
+  });
+}
+function toggleTheme(){
+  const r=document.documentElement;
+  const isDark=r.dataset.theme==='dark'
+    ||(r.dataset.theme===''&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+  r.dataset.theme=isDark?'light':'dark';
+  buildChart();
+}
+buildChart();
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',
+  ()=>{if(!document.documentElement.dataset.theme)buildChart();});
+</script>
+</div></body></html>
