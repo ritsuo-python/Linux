@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>速度 時間帯別詳細（7日間集計） — 2026年7月25日〜31日</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+  integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4"
+  crossorigin="anonymous"></script>
+<style>
+:root {
+  --bg-page:#f2f4f8; --bg-surface:#ffffff; --bg-row:#f7f8fc;
+  --text-pri:#1b2236; --text-sec:#4e5d7a; --text-mute:#7d8da8;
+  --border:#cdd3e6; --border-lt:#e4e8f2;
+  --shadow:0 1px 4px rgba(27,34,54,.07),0 4px 16px rgba(27,34,54,.05);
+}
+@media (prefers-color-scheme:dark) {
+  :root {
+    --bg-page:#111520; --bg-surface:#1a1e2c; --bg-row:#1e2335;
+    --text-pri:#dde2f0; --text-sec:#8a96b4; --text-mute:#5a647e;
+    --border:#252d44; --border-lt:#1f2640;
+    --shadow:0 1px 4px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  }
+}
+:root[data-theme="dark"] {
+  --bg-page:#111520; --bg-surface:#1a1e2c; --bg-row:#1e2335;
+  --text-pri:#dde2f0; --text-sec:#8a96b4; --text-mute:#5a647e;
+  --border:#252d44; --border-lt:#1f2640;
+  --shadow:0 1px 4px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+}
+:root[data-theme="light"] {
+  --bg-page:#f2f4f8; --bg-surface:#ffffff; --bg-row:#f7f8fc;
+  --text-pri:#1b2236; --text-sec:#4e5d7a; --text-mute:#7d8da8;
+  --border:#cdd3e6; --border-lt:#e4e8f2;
+  --shadow:0 1px 4px rgba(27,34,54,.07),0 4px 16px rgba(27,34,54,.05);
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+body {
+  background:var(--bg-page); color:var(--text-pri);
+  font-family:-apple-system,'Hiragino Sans','Yu Gothic UI','Meiryo',sans-serif;
+  font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.page { max-width:1100px; margin:0 auto; padding:28px 24px 60px; display:flex; flex-direction:column; gap:22px; }
+.breadcrumb { font-size:11px; color:var(--text-mute); letter-spacing:.03em; }
+.breadcrumb span { color:var(--text-sec); }
+.title-block { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.title-block h1 { font-size:22px; font-weight:700; letter-spacing:-.02em; line-height:1.25; }
+.meta { font-size:11px; color:var(--text-mute); margin-top:5px; line-height:2.0; }
+.badge {
+  display:inline-block; background:rgba(61,120,208,0.12); color:#3d78d0;
+  border:1px solid rgba(61,120,208,0.25); border-radius:4px;
+  font-size:10px; font-weight:700; padding:1px 7px; margin-right:4px; letter-spacing:.04em;
+}
+.btn { background:var(--bg-surface); border:1px solid var(--border); border-radius:6px;
+       padding:6px 14px; font-size:12px; font-family:inherit; color:var(--text-sec); cursor:pointer; }
+
+/* KPI */
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.kpi-card {
+  background:var(--bg-surface); border:1px solid var(--border-lt);
+  border-radius:10px; padding:20px 22px 18px; box-shadow:var(--shadow);
+  position:relative; overflow:hidden;
+}
+.kpi-card::before {
+  content:''; position:absolute; top:0; left:0; right:0;
+  height:4px; border-radius:10px 10px 0 0;
+}
+.kpi-card:nth-child(1)::before { background:#3d78d0; }
+.kpi-card:nth-child(2)::before { background:#22b894; }
+.kpi-card:nth-child(3)::before { background:#dc7a10; }
+.kpi-card:nth-child(4)::before { background:#cc2a18; }
+.kpi-lbl { font-size:11px; color:var(--text-mute); letter-spacing:.04em; text-transform:uppercase; margin-bottom:6px; }
+.kpi-val { font-size:30px; font-weight:700; font-variant-numeric:tabular-nums;
+           font-family:'SF Mono','Courier New',monospace; line-height:1.1; letter-spacing:-.02em; }
+.kpi-unit { font-size:15px; font-weight:400; color:var(--text-sec); }
+.kpi-sub { font-size:12px; color:var(--text-sec); margin-top:6px; }
+
+/* Panel */
+.panel {
+  background:var(--bg-surface); border:1px solid var(--border-lt);
+  border-radius:10px; padding:22px 24px; box-shadow:var(--shadow);
+}
+.panel-title {
+  font-size:12px; font-weight:700; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-sec); margin-bottom:16px;
+}
+.chart-wrap { position:relative; height:300px; }
+
+/* Legend */
+.legend-row {
+  display:flex; gap:16px; flex-wrap:wrap; font-size:11px; color:var(--text-sec);
+  margin-top:14px; padding-top:12px; border-top:1px solid var(--border-lt);
+}
+.leg { display:flex; align-items:center; gap:5px; }
+.leg-line { width:20px; height:3px; border-radius:2px; }
+.leg-band { width:20px; height:10px; border-radius:2px; background:rgba(61,120,208,0.18); }
+
+/* Table */
+.tbl-wrap { overflow-x:auto; }
+table.data {
+  border-collapse:collapse; width:100%;
+  font-size:13px; font-variant-numeric:tabular-nums;
+}
+table.data th {
+  background:var(--bg-row); color:var(--text-sec);
+  font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  padding:8px 14px; border-bottom:2px solid var(--border); white-space:nowrap; text-align:right;
+}
+table.data th:first-child { text-align:center; }
+table.data td {
+  padding:7px 14px; border-bottom:1px solid var(--border-lt);
+  text-align:right; color:var(--text-pri); vertical-align:middle;
+}
+table.data td:first-child { text-align:center; font-weight:700; color:var(--text-sec); font-size:12px; }
+table.data tr.peak-row td:first-child::after { content:' ★'; color:#dc7a10; font-size:10px; }
+table.data tr:hover td { background:var(--bg-row); }
+table.data tr.no-data td { color:var(--text-mute); }
+table.data tfoot td {
+  border-top:2px solid var(--border); border-bottom:none;
+  font-weight:700; background:var(--bg-row); padding:9px 14px;
+}
+table.data tfoot td:first-child { color:var(--text-sec); }
+
+.cnt-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:32px; height:20px; border-radius:10px; font-size:11px; font-weight:700;
+  background:var(--bg-row); color:var(--text-sec); padding:0 7px;
+}
+
+.sc { display:inline-block; border-radius:4px; padding:1px 8px; font-size:12px; font-weight:700; }
+.sc-b  { background:#dbeafe; color:#1d4ed8; }
+.sc-g  { background:#dcfce7; color:#15803d; }
+.sc-y  { background:#fef9c3; color:#92400e; }
+.sc-r  { background:#fee2e2; color:#991b1b; }
+.sc-dr { background:#fce7f3; color:#831843; }
+
+/* Bar cell */
+.bar-cell { min-width:200px; padding-right:20px; }
+.bar-bg {
+  position:relative; height:14px; background:var(--bg-row);
+  border-radius:3px; overflow:hidden;
+}
+.bar-range {
+  position:absolute; height:100%; border-radius:3px;
+  background:rgba(61,120,208,0.18);
+}
+.bar-avg {
+  position:absolute; top:2px; height:10px; width:3px;
+  background:#3d78d0; border-radius:2px;
+}
+
+/* Info bar */
+.info-bar {
+  display:flex; gap:16px; flex-wrap:wrap; align-items:center;
+  padding:12px 16px; background:rgba(61,120,208,0.06);
+  border:1px solid rgba(61,120,208,0.15); border-radius:8px;
+  font-size:12px; color:var(--text-sec);
+}
+.info-bar strong { color:var(--text-pri); }
+
+@media (max-width:700px) {
+  .kpi-row { grid-template-columns:1fr 1fr; }
+  .kpi-val { font-size:22px; }
+  .bar-cell { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="breadcrumb">速度計測システム <span>/</span> 週間集計 <span>/</span> 時間帯別 最低・平均・最高速度</div>
+
+  <div class="title-block">
+    <div>
+      <h1>
+        <span class="badge">7日間集計</span>
+        2026年7月25日（土）〜 31日（金） — 時間帯別 速度詳細
+      </h1>
+      <p class="meta">
+        期間: 7/25(土)〜7/31(金)　7日間　／
+        データ: /Users/fujiiritsuo/track-photo　／
+        除外: *_line1.jpg　／
+        生成: 2026-08-03
+      </p>
+    </div>
+    <button class="btn" onclick="toggleTheme()">テーマ切替</button>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-lbl">総台数（7日間）</div>
+      <div class="kpi-val">427<span class="kpi-unit">台</span></div>
+      <div class="kpi-sub">日平均 61.0台</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">最低速度</div>
+      <div class="kpi-val">14<span class="kpi-unit">km/h</span></div>
+      <div class="kpi-sub">08時台・09時台に記録</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">週間 平均速度</div>
+      <div class="kpi-val">35.4<span class="kpi-unit">km/h</span></div>
+      <div class="kpi-sub">全427台の加重平均</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">最高速度</div>
+      <div class="kpi-val">59<span class="kpi-unit">km/h</span></div>
+      <div class="kpi-sub">09時台に記録</div>
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="info-bar">
+    <span>ピーク台数: <strong>11時台 52台</strong>（週間最多）</span>
+    <span>|</span>
+    <span>速度最多帯: <strong>10時台 avg 41.0 km/h</strong>（最速）</span>
+    <span>|</span>
+    <span>低速帯: <strong>18時台 avg 30.7 km/h</strong> / <strong>17時台 30.8 km/h</strong></span>
+    <span>|</span>
+    <span>夜間(01〜03時): トラック中心 avg 37〜38 km/h</span>
+  </div>
+
+  <!-- Chart -->
+  <div class="panel">
+    <div class="panel-title">時間帯別 速度レンジ（最低〜最高）と平均速度　― 7/25〜7/31 累計</div>
+    <div class="chart-wrap">
+      <canvas id="rangeChart"></canvas>
+    </div>
+    <div class="legend-row">
+      <div class="leg"><div class="leg-line" style="background:#3d78d0;"></div>平均速度</div>
+      <div class="leg"><div class="leg-line" style="background:#cc2a18;height:1.5px;border-top:2px dashed #cc2a18;background:transparent;"></div>最高速度</div>
+      <div class="leg"><div class="leg-line" style="border-top:2px dashed #22b894;background:transparent;"></div>最低速度</div>
+      <div class="leg"><div class="leg-band"></div>最低〜最高レンジ</div>
+      <div class="leg" style="margin-left:auto;color:var(--text-mute);">● 点の大きさ = 台数比例</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="panel">
+    <div class="panel-title">時間帯別 台数 / 最低 / 平均 / 最高 一覧　（★ = 最多台数時間帯）</div>
+    <div class="tbl-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>時刻</th>
+            <th>台数</th>
+            <th>最低速度</th>
+            <th>平均速度</th>
+            <th>最高速度</th>
+            <th style="text-align:left;" class="bar-cell">速度レンジ（0〜65 km/h）</th>
+          </tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+        <tfoot>
+          <tr>
+            <td>合計 / 全体</td>
+            <td style="text-align:right;"><span class="cnt-badge" style="background:rgba(61,120,208,0.15);color:#3d78d0;">427</span></td>
+            <td style="text-align:right;"><span class="sc sc-b">14</span></td>
+            <td style="text-align:right;"><span class="sc sc-g">35.4</span></td>
+            <td style="text-align:right;"><span class="sc sc-r">59</span></td>
+            <td class="bar-cell" style="text-align:left;color:var(--text-mute);font-size:11px;font-weight:400;">7日間 427台の集計値</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const RAW = [
+  {h:'00', cnt:0,  min:null, avg:null,  max:null},
+  {h:'01', cnt:10, min:35,   avg:37.5,  max:40},
+  {h:'02', cnt:11, min:25,   avg:37.6,  max:40},
+  {h:'03', cnt:3,  min:35,   avg:35.0,  max:35},
+  {h:'04', cnt:0,  min:null, avg:null,  max:null},
+  {h:'05', cnt:4,  min:35,   avg:40.2,  max:46},
+  {h:'06', cnt:17, min:27,   avg:36.5,  max:47},
+  {h:'07', cnt:10, min:29,   avg:35.6,  max:50},
+  {h:'08', cnt:35, min:14,   avg:33.7,  max:46},
+  {h:'09', cnt:51, min:14,   avg:36.2,  max:59},
+  {h:'10', cnt:37, min:30,   avg:41.0,  max:56},
+  {h:'11', cnt:52, min:17,   avg:36.4,  max:52},
+  {h:'12', cnt:41, min:24,   avg:34.3,  max:52},
+  {h:'13', cnt:22, min:22,   avg:34.7,  max:47},
+  {h:'14', cnt:30, min:23,   avg:36.6,  max:52},
+  {h:'15', cnt:15, min:23,   avg:32.0,  max:45},
+  {h:'16', cnt:23, min:20,   avg:34.2,  max:42},
+  {h:'17', cnt:28, min:19,   avg:30.8,  max:38},
+  {h:'18', cnt:18, min:20,   avg:30.7,  max:38},
+  {h:'19', cnt:11, min:30,   avg:34.1,  max:35},
+  {h:'20', cnt:6,  min:30,   avg:33.8,  max:40},
+  {h:'21', cnt:3,  min:35,   avg:37.0,  max:38},
+  {h:'22', cnt:0,  min:null, avg:null,  max:null},
+  {h:'23', cnt:0,  min:null, avg:null,  max:null},
+];
+
+const PEAK_H = 52;  // max count in single hour
+const labels   = RAW.map(r => r.h + '時');
+const avgData  = RAW.map(r => r.avg);
+const maxData  = RAW.map(r => r.max);
+const minData  = RAW.map(r => r.min);
+
+const isDark = () =>
+  document.documentElement.dataset.theme === 'dark' ||
+  (document.documentElement.dataset.theme === '' &&
+   window.matchMedia('(prefers-color-scheme:dark)').matches);
+
+function getColors() {
+  const d = isDark();
+  return {
+    gridColor: d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+    tickColor: d ? '#5a647e' : '#7d8da8',
+    textColor: d ? '#8a96b4' : '#4e5d7a',
+  };
+}
+
+let chart;
+function buildChart() {
+  const ctx = document.getElementById('rangeChart').getContext('2d');
+  const c = getColors();
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '最高速度',
+          data: maxData,
+          borderColor: 'rgba(204,42,24,0.7)',
+          backgroundColor: 'rgba(61,120,208,0.10)',
+          borderWidth: 1.5,
+          borderDash: [4,3],
+          pointRadius: 0,
+          fill: '+1',
+          tension: 0.3,
+          order: 3,
+        },
+        {
+          label: '最低速度',
+          data: minData,
+          borderColor: 'rgba(34,184,148,0.7)',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          borderDash: [4,3],
+          pointRadius: 0,
+          fill: false,
+          tension: 0.3,
+          order: 3,
+        },
+        {
+          label: '平均速度',
+          data: avgData,
+          borderColor: '#3d78d0',
+          backgroundColor: '#3d78d0',
+          borderWidth: 2.5,
+          pointRadius: RAW.map(r => r.cnt ? Math.max(3, r.cnt / PEAK_H * 12) : 0),
+          pointHoverRadius: RAW.map(r => r.cnt ? Math.max(5, r.cnt / PEAK_H * 14) : 0),
+          fill: false,
+          tension: 0.3,
+          order: 1,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: items => items[0].label,
+            label: item => {
+              const r = RAW[item.dataIndex];
+              if (!r.cnt) return null;
+              const names = ['最高', '最低', '平均'];
+              const vals  = [r.max, r.min, r.avg];
+              if (item.datasetIndex === 2) {
+                return `平均: ${r.avg} km/h（${r.cnt}台）`;
+              }
+              return `${names[item.datasetIndex]}: ${vals[item.datasetIndex]} km/h`;
+            },
+            afterBody: items => {
+              const r = RAW[items[0].dataIndex];
+              if (!r.cnt) return [];
+              return [`台数合計: ${r.cnt}台`, `レンジ: ${r.min}〜${r.max} km/h`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: c.gridColor },
+          ticks: { color: c.tickColor, font:{size:10}, maxRotation:0 }
+        },
+        y: {
+          min: 0, max: 70,
+          title: { display: true, text: '速度 (km/h)', color: c.textColor, font:{size:11} },
+          grid: { color: c.gridColor },
+          ticks: {
+            color: c.tickColor, font:{size:11},
+            callback: v => v + ' km/h',
+            stepSize: 10,
+          }
+        }
+      }
+    }
+  });
+}
+buildChart();
+
+// Speed color chip
+function sc(v) {
+  if (v === null) return '—';
+  let cls = 'sc-g';
+  if      (v < 30) cls = 'sc-b';
+  else if (v < 40) cls = 'sc-g';
+  else if (v < 50) cls = 'sc-y';
+  else if (v < 60) cls = 'sc-r';
+  else              cls = 'sc-dr';
+  return `<span class="sc ${cls}">${v}</span>`;
+}
+
+// Table
+const tbody = document.getElementById('tblBody');
+RAW.forEach(r => {
+  const tr = document.createElement('tr');
+  if (!r.cnt) {
+    tr.className = 'no-data';
+    tr.innerHTML = `
+      <td>${r.h}時</td>
+      <td><span class="cnt-badge">0</span></td>
+      <td style="color:var(--text-mute);">—</td>
+      <td style="color:var(--text-mute);">—</td>
+      <td style="color:var(--text-mute);">—</td>
+      <td class="bar-cell"></td>
+    `;
+  } else {
+    if (r.cnt === PEAK_H) tr.className = 'peak-row';
+    const cntOpacity = 0.08 + r.cnt / PEAK_H * 0.35;
+    const minPct = (r.min / 65 * 100).toFixed(1);
+    const bandW  = ((r.max - r.min) / 65 * 100).toFixed(1);
+    const avgPct = (r.avg / 65 * 100).toFixed(1);
+    tr.innerHTML = `
+      <td>${r.h}時</td>
+      <td><span class="cnt-badge" style="background:rgba(61,120,208,${cntOpacity});color:#3d78d0;">${r.cnt}</span></td>
+      <td>${sc(r.min)}</td>
+      <td>${sc(r.avg)}</td>
+      <td>${sc(r.max)}</td>
+      <td class="bar-cell">
+        <div class="bar-bg">
+          <div class="bar-range" style="left:${minPct}%;width:${bandW}%;"></div>
+          <div class="bar-avg"   style="left:calc(${avgPct}% - 1.5px);"></div>
+        </div>
+      </td>
+    `;
+  }
+  tbody.appendChild(tr);
+});
+
+// Theme toggle
+function toggleTheme() {
+  const r = document.documentElement;
+  const dark = r.dataset.theme === 'dark' ||
+    (r.dataset.theme === '' && window.matchMedia('(prefers-color-scheme:dark)').matches);
+  r.dataset.theme = dark ? 'light' : 'dark';
+  if (chart) {
+    const c = getColors();
+    chart.options.scales.x.grid.color = c.gridColor;
+    chart.options.scales.x.ticks.color = c.tickColor;
+    chart.options.scales.y.grid.color = c.gridColor;
+    chart.options.scales.y.ticks.color = c.tickColor;
+    chart.options.scales.y.title.color = c.textColor;
+    chart.update();
+  }
+}
+</script>
+</body>
+</html>
