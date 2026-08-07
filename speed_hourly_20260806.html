@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026年8/6 時間帯別速度統計</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+  integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4"
+  crossorigin="anonymous"></script>
+<style>
+:root {
+  --bg: #f5f6fa;
+  --bg-surface: #ffffff;
+  --text: #1a1d2e;
+  --text-sub: #5a5f7a;
+  --text-mute: #9098b5;
+  --border: #e4e7f0;
+  --shadow: 0 2px 12px rgba(60,70,120,.08);
+  --accent: #3d78d0;
+  --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #13151f;
+    --bg-surface: #1e2130;
+    --text: #e8eaf6;
+    --text-sub: #9098b5;
+    --text-mute: #5a5f7a;
+    --border: #2a2f45;
+    --shadow: 0 2px 12px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f5f6fa; --bg-surface: #ffffff; --text: #1a1d2e;
+  --text-sub: #5a5f7a; --text-mute: #9098b5; --border: #e4e7f0;
+  --shadow: 0 2px 12px rgba(60,70,120,.08);
+}
+:root[data-theme="dark"] {
+  --bg: #13151f; --bg-surface: #1e2130; --text: #e8eaf6;
+  --text-sub: #9098b5; --text-mute: #5a5f7a; --border: #2a2f45;
+  --shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+header { background: var(--bg-surface); border-bottom: 1px solid var(--border);
+  padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+.breadcrumb { font-size: 12px; color: var(--text-mute); }
+.breadcrumb span { color: var(--text-sub); }
+h1 { font-size: 18px; font-weight: 700; margin: 0; }
+.meta { font-size: 12px; color: var(--text-mute); margin-top: 2px; }
+.theme-btn { background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 10px; cursor: pointer; color: var(--text-sub); font-size: 12px; }
+
+main { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.kpi { background: var(--bg-surface); border-radius: var(--radius); padding: 16px;
+  box-shadow: var(--shadow); text-align: center; }
+.kpi-label { font-size: 11px; color: var(--text-mute); letter-spacing: .04em; margin-bottom: 4px; }
+.kpi-val { font-size: 28px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.kpi-unit { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
+.kpi-val.blue { color: #3d78d0; }
+.kpi-val.green { color: #22b894; }
+.kpi-val.orange { color: #dc7a10; }
+.kpi-val.red { color: #cc2a18; }
+
+.card { background: var(--bg-surface); border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow); margin-bottom: 20px; }
+.card-title { font-size: 13px; font-weight: 700; color: var(--text-sub);
+  letter-spacing: .06em; margin-bottom: 16px; }
+.chart-wrap { position: relative; height: 260px; }
+
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { font-size: 11px; color: var(--text-mute); letter-spacing: .04em;
+  padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: right; }
+th:first-child { text-align: left; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: right;
+  font-size: 13px; vertical-align: middle; }
+td:first-child { text-align: left; font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+.chip { display: inline-block; padding: 2px 7px; border-radius: 10px;
+  font-size: 11px; font-weight: 700; min-width: 36px; text-align: center; }
+.chip.s1 { background: #dbeafe; color: #1d4ed8; }
+.chip.s2 { background: #d1fae5; color: #065f46; }
+.chip.s3 { background: #fef9c3; color: #92400e; }
+.chip.s4 { background: #fee2e2; color: #991b1b; }
+.chip.s5 { background: #fce7f3; color: #831843; }
+.bar-wrap { width: 140px; background: var(--border); border-radius: 4px; height: 6px;
+  display: inline-block; position: relative; vertical-align: middle; margin-left: 8px; }
+.bar-fill { height: 6px; border-radius: 4px; background: linear-gradient(90deg,#22b894,#dc7a10,#cc2a18); }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="breadcrumb">速度計測システム <span>/ 日別レポート</span></div>
+    <h1>2026年8/6（木） — 時間帯別速度統計</h1>
+    <div class="meta">データ: /Users/fujiiritsuo/track-photo　✗ line1/line2 除外済み</div>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">テーマ切替</button>
+</header>
+
+<main>
+  <!-- KPI -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">通過台数</div>
+      <div class="kpi-val blue">61</div>
+      <div class="kpi-unit">台</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">最低速度</div>
+      <div class="kpi-val green">12</div>
+      <div class="kpi-unit">km/h（8時台）</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">日平均速度</div>
+      <div class="kpi-val orange">35.7</div>
+      <div class="kpi-unit">km/h</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">最高速度</div>
+      <div class="kpi-val red">60</div>
+      <div class="kpi-unit">km/h（14時台）</div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="card">
+    <div class="card-title">時間帯別 速度推移（最低・平均・最高）</div>
+    <div class="chart-wrap">
+      <canvas id="speedChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <div class="card-title">時間帯別 詳細データ</div>
+    <table>
+      <thead>
+        <tr>
+          <th>時間帯</th>
+          <th>台数</th>
+          <th>最低</th>
+          <th>平均</th>
+          <th>最高</th>
+          <th style="text-align:left;padding-left:18px;">速度帯 / 範囲</th>
+        </tr>
+      </thead>
+      <tbody id="tbl"></tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+const HOURS_DATA = [
+  { h:  6, n:  2, min: 27, avg: 34.0, max: 41 },
+  { h:  7, n:  1, min: 35, avg: 35.0, max: 35 },
+  { h:  8, n:  7, min: 12, avg: 34.1, max: 52 },
+  { h:  9, n: 14, min: 13, avg: 30.6, max: 46 },
+  { h: 10, n:  5, min: 24, avg: 38.6, max: 58 },
+  { h: 11, n:  8, min: 31, avg: 39.4, max: 53 },
+  { h: 12, n: 11, min: 26, avg: 37.1, max: 54 },
+  { h: 13, n:  7, min: 24, avg: 36.3, max: 51 },
+  { h: 14, n:  4, min: 34, avg: 44.5, max: 60 },
+  { h: 15, n:  2, min: 30, avg: 30.5, max: 31 },
+];
+
+const labels = Array.from({length:24}, (_,i) => i + '時');
+const fill = arr => {
+  const out = Array(24).fill(null);
+  arr.forEach(d => { out[d.h] = d; });
+  return out;
+};
+const filled = fill(HOURS_DATA);
+
+const maxArr  = filled.map(d => d ? d.max  : null);
+const avgArr  = filled.map(d => d ? d.avg  : null);
+const minArr  = filled.map(d => d ? d.min  : null);
+const cntArr  = filled.map(d => d ? d.n    : null);
+const maxCnt  = Math.max(...HOURS_DATA.map(d => d.n));
+
+const ctx = document.getElementById('speedChart').getContext('2d');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      {
+        label: '最高',
+        data: maxArr,
+        borderColor: 'rgba(204,42,24,.7)',
+        borderDash: [5,4],
+        borderWidth: 1.5,
+        pointRadius: 0,
+        fill: '+2',
+        backgroundColor: 'rgba(220,120,16,.08)',
+        tension: 0.3,
+        spanGaps: false,
+      },
+      {
+        label: '平均',
+        data: avgArr,
+        borderColor: '#3d78d0',
+        borderWidth: 2.5,
+        pointRadius: cntArr.map(n => n ? 3 + (n / maxCnt) * 6 : 0),
+        pointBackgroundColor: '#3d78d0',
+        fill: false,
+        tension: 0.3,
+        spanGaps: false,
+      },
+      {
+        label: '最低',
+        data: minArr,
+        borderColor: 'rgba(34,184,148,.7)',
+        borderDash: [5,4],
+        borderWidth: 1.5,
+        pointRadius: 0,
+        fill: false,
+        tension: 0.3,
+        spanGaps: false,
+      },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+      tooltip: {
+        callbacks: {
+          afterBody: ctx => {
+            const i = ctx[0].dataIndex;
+            const d = filled[i];
+            return d ? [`台数: ${d.n}台`] : [];
+          }
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(128,128,128,.1)' }, ticks: { font: { size: 10 } } },
+      y: {
+        min: 0, max: 70,
+        grid: { color: 'rgba(128,128,128,.1)' },
+        ticks: { font: { size: 10 }, callback: v => v + ' km/h' }
+      }
+    }
+  }
+});
+
+function chipClass(v) {
+  if (v < 30) return 's1';
+  if (v < 40) return 's2';
+  if (v < 50) return 's3';
+  if (v < 60) return 's4';
+  return 's5';
+}
+
+const tbl = document.getElementById('tbl');
+HOURS_DATA.forEach(d => {
+  const pct = Math.round((d.max / 70) * 100);
+  const minPct = Math.round((d.min / 70) * 100);
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${d.h}時台</td>
+    <td>${d.n}台</td>
+    <td><span class="chip ${chipClass(d.min)}">${d.min}</span></td>
+    <td><span class="chip ${chipClass(d.avg)}">${d.avg.toFixed(1)}</span></td>
+    <td><span class="chip ${chipClass(d.max)}">${d.max}</span></td>
+    <td style="text-align:left">
+      <div class="bar-wrap">
+        <div class="bar-fill" style="width:${pct}%;margin-left:${minPct}%;width:${pct-minPct}%"></div>
+      </div>
+    </td>`;
+  tbl.appendChild(tr);
+});
+
+function toggleTheme() {
+  const r = document.documentElement;
+  const cur = r.getAttribute('data-theme');
+  r.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+}
+</script>
+</body>
+</html>
