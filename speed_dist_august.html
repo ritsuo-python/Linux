@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8月 速度分布一覧</title>
+<style>
+:root {
+  --bg: #f5f6fa;
+  --bg-surface: #ffffff;
+  --text: #1a1d2e;
+  --text-sub: #5a5f7a;
+  --text-mute: #9098b5;
+  --border: #e4e7f0;
+  --shadow: 0 2px 12px rgba(60,70,120,.08);
+  --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #13151f; --bg-surface: #1e2130; --text: #e8eaf6;
+    --text-sub: #9098b5; --text-mute: #5a5f7a; --border: #2a2f45;
+    --shadow: 0 2px 12px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f5f6fa; --bg-surface: #ffffff; --text: #1a1d2e;
+  --text-sub: #5a5f7a; --text-mute: #9098b5; --border: #e4e7f0;
+  --shadow: 0 2px 12px rgba(60,70,120,.08);
+}
+:root[data-theme="dark"] {
+  --bg: #13151f; --bg-surface: #1e2130; --text: #e8eaf6;
+  --text-sub: #9098b5; --text-mute: #5a5f7a; --border: #2a2f45;
+  --shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+
+header { background: var(--bg-surface); border-bottom: 1px solid var(--border);
+  padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+.breadcrumb { font-size: 12px; color: var(--text-mute); }
+h1 { font-size: 18px; font-weight: 700; margin: 0; }
+.meta { font-size: 12px; color: var(--text-mute); margin-top: 2px; }
+.theme-btn { background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 10px; cursor: pointer; color: var(--text-sub); font-size: 12px; }
+
+main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.kpi { background: var(--bg-surface); border-radius: var(--radius); padding: 14px;
+  box-shadow: var(--shadow); text-align: center; }
+.kpi-label { font-size: 11px; color: var(--text-mute); letter-spacing: .04em; margin-bottom: 3px; }
+.kpi-val { font-size: 26px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.kpi-unit { font-size: 12px; color: var(--text-sub); margin-top: 3px; }
+
+.card { background: var(--bg-surface); border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow); margin-bottom: 20px; overflow-x: auto; }
+.card-title { font-size: 13px; font-weight: 700; color: var(--text-sub);
+  letter-spacing: .06em; margin-bottom: 16px; }
+
+/* Main heatmap table */
+table.heat { border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 860px; width: 100%; }
+table.heat th {
+  font-size: 11px; color: var(--text-mute); padding: 6px 8px;
+  text-align: center; white-space: nowrap; border-bottom: 2px solid var(--border);
+  font-weight: 600; letter-spacing: .03em;
+}
+table.heat th.speed-head { background: linear-gradient(90deg, #dbeafe 0%, #d1fae5 35%, #fef9c3 60%, #fee2e2 80%, #fce7f3 100%);
+  border-radius: 4px; }
+table.heat th.date-col { text-align: left; min-width: 70px; }
+table.heat td { padding: 5px 6px; border-bottom: 1px solid var(--border);
+  text-align: center; font-size: 12px; vertical-align: middle; }
+table.heat td.date-cell {
+  text-align: left; padding: 5px 10px; white-space: nowrap; font-weight: 700; font-size: 13px;
+}
+table.heat td.total-cell { font-weight: 700; color: var(--text); font-size: 13px; }
+table.heat td.avg-cell { white-space: nowrap; }
+table.heat tfoot td { border-top: 2px solid var(--border); border-bottom: none;
+  font-weight: 700; font-size: 12px; background: rgba(128,128,128,.04); }
+table.heat tr:last-child td { border-bottom: none; }
+table.heat tr:hover td { filter: brightness(.97); }
+
+.heat-cell { display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 28px; border-radius: 5px; font-size: 12px; font-weight: 600; }
+.heat-cell.v0 { color: var(--text-mute); }
+
+/* DOW color badge */
+.dow { display: inline-block; width: 4px; height: 22px; border-radius: 2px;
+  margin-right: 6px; vertical-align: middle; }
+.date-label { vertical-align: middle; }
+
+/* avg chip */
+.achip { display: inline-block; padding: 2px 7px; border-radius: 8px;
+  font-size: 11px; font-weight: 700; }
+.a1 { background: #dbeafe; color: #1d4ed8; }
+.a2 { background: #d1fae5; color: #065f46; }
+.a3 { background: #fef9c3; color: #92400e; }
+.a4 { background: #fee2e2; color: #991b1b; }
+
+/* Legend */
+.legend { display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  margin-top: 14px; font-size: 11px; color: var(--text-mute); }
+.leg-cell { display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 20px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="breadcrumb">速度計測システム / 速度分布レポート</div>
+    <h1>2026年8月 — 日別 速度分布一覧</h1>
+    <div class="meta">縦軸: 日付（14稼働日）　横軸: 速度 5km/h ピッチ　✗ line1/line2 除外　※ 停止日（8/8〜11・8/16）除外</div>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">テーマ切替</button>
+</header>
+
+<main>
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">総台数</div>
+      <div class="kpi-val" style="color:#3d78d0">603</div>
+      <div class="kpi-unit">台 / 14稼働日</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">最多速度帯</div>
+      <div class="kpi-val" style="color:#22b894">30〜34</div>
+      <div class="kpi-unit">km/h（期間合計 163台）</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">40km/h超</div>
+      <div class="kpi-val" style="color:#dc7a10">197</div>
+      <div class="kpi-unit">台（32.7%）</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">最多台数日</div>
+      <div class="kpi-val" style="color:#cc2a18">8/7</div>
+      <div class="kpi-unit">金曜日（92台）</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">日別 速度分布ヒートマップ（台数）</div>
+    <table class="heat" id="mainTable">
+      <thead>
+        <tr>
+          <th class="date-col">日付</th>
+          <th colspan="11" class="speed-head">← 低速　　　　速度帯（5km/h ピッチ）　　　　高速 →</th>
+          <th>合計</th>
+          <th>平均</th>
+        </tr>
+        <tr id="binHead">
+          <th></th>
+          <!-- bin headers injected by JS -->
+          <th>合計</th>
+          <th>km/h</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+      <tfoot id="tfoot"></tfoot>
+    </table>
+
+    <div class="legend">
+      <span>台数:</span>
+      <span class="leg-cell" style="background:transparent;color:var(--text-mute);border:1px solid var(--border)">0</span>
+      <span class="leg-cell" style="background:#FFF0D6;color:#7a5a00">1〜2</span>
+      <span class="leg-cell" style="background:#FECB7A;color:#6a3c00">3〜5</span>
+      <span class="leg-cell" style="background:#FBA337;color:#fff">6〜9</span>
+      <span class="leg-cell" style="background:#E87012;color:#fff">10〜14</span>
+      <span class="leg-cell" style="background:#C44400;color:#fff">15〜20</span>
+      <span class="leg-cell" style="background:#8C1A00;color:#fff">21+</span>
+    </div>
+  </div>
+</main>
+
+<script>
+const DAYS = [
+  {day:'8/1',  date:new Date(2026,7,1),  n:43,  bins:[1,1,1,7,10,8,9,4,2,0,0]},
+  {day:'8/2',  date:new Date(2026,7,2),  n:17,  bins:[0,0,0,0,5,4,4,4,0,0,0]},
+  {day:'8/3',  date:new Date(2026,7,3),  n:50,  bins:[1,1,4,10,12,7,7,5,1,1,1]},
+  {day:'8/4',  date:new Date(2026,7,4),  n:56,  bins:[1,0,3,12,14,7,14,2,2,1,0]},
+  {day:'8/5',  date:new Date(2026,7,5),  n:20,  bins:[0,0,0,2,4,5,9,0,0,0,0]},
+  {day:'8/6',  date:new Date(2026,7,6),  n:61,  bins:[2,3,2,8,15,12,5,7,5,1,1]},
+  {day:'8/7',  date:new Date(2026,7,7),  n:92,  bins:[0,3,1,5,22,32,16,9,3,1,0]},
+  {day:'8/12', date:new Date(2026,7,12), n:37,  bins:[0,0,4,8,8,6,6,5,0,0,0]},
+  {day:'8/14', date:new Date(2026,7,14), n:58,  bins:[1,0,9,11,20,13,1,1,1,1,0]},
+  {day:'8/15', date:new Date(2026,7,15), n:31,  bins:[0,0,2,6,9,7,6,1,0,0,0]},
+  {day:'8/17', date:new Date(2026,7,17), n:60,  bins:[1,0,5,8,25,9,5,6,1,0,0]},
+  {day:'8/18', date:new Date(2026,7,18), n:15,  bins:[0,0,1,3,1,4,4,2,0,0,0]},
+  {day:'8/19', date:new Date(2026,7,19), n:15,  bins:[0,0,6,3,2,1,1,2,0,0,0]},
+  {day:'8/20', date:new Date(2026,7,20), n:48,  bins:[0,3,6,8,15,6,4,6,0,0,0]},
+];
+
+const BIN_LABELS = ['10〜14','15〜19','20〜24','25〜29','30〜34','35〜39','40〜44','45〜49','50〜54','55〜59','60+'];
+const BIN_MID    = [12, 17, 22, 27, 32, 37, 42, 47, 52, 57, 62];
+
+const DOW_NAMES  = ['日','月','火','水','木','金','土'];
+const DOW_COLORS = ['#7898b4','#3d78d0','#22b894','#7060c8','#dc7a10','#cc2a18','#b050a0'];
+
+function cellColor(v, max) {
+  if (v === 0) return {bg:'transparent', fg:'var(--text-mute)', border:'1px solid var(--border)'};
+  if (v <= 2)  return {bg:'#FFF0D6', fg:'#7a5a00', border:'none'};
+  if (v <= 5)  return {bg:'#FECB7A', fg:'#6a3c00', border:'none'};
+  if (v <= 9)  return {bg:'#FBA337', fg:'#fff',    border:'none'};
+  if (v <= 14) return {bg:'#E87012', fg:'#fff',    border:'none'};
+  if (v <= 20) return {bg:'#C44400', fg:'#fff',    border:'none'};
+  return           {bg:'#8C1A00', fg:'#fff',    border:'none'};
+}
+
+function avgChip(avg) {
+  const cls = avg < 30 ? 'a1' : avg < 35 ? 'a2' : avg < 40 ? 'a3' : 'a4';
+  return `<span class="achip ${cls}">${avg.toFixed(1)}</span>`;
+}
+
+// bin headers
+const binHead = document.getElementById('binHead');
+const refTh = binHead.children[1]; // 合計 th を事前確定
+BIN_LABELS.forEach(lbl => {
+  const th = document.createElement('th');
+  th.textContent = lbl;
+  th.style.fontSize = '10px';
+  binHead.insertBefore(th, refTh); // 常に合計の前に追加 → 順序正しく
+});
+
+// compute bin totals
+const binTotals = Array(11).fill(0);
+DAYS.forEach(d => d.bins.forEach((v,i) => { binTotals[i] += v; }));
+const grandTotal = binTotals.reduce((a,b)=>a+b,0);
+
+// rows
+const tbody = document.getElementById('tbody');
+const maxCell = Math.max(...DAYS.flatMap(d => d.bins));
+
+DAYS.forEach(d => {
+  const dow = d.date.getDay();
+  const dowName = DOW_NAMES[dow];
+  const dowColor = DOW_COLORS[dow];
+
+  // weighted avg speed
+  let wSum = 0;
+  d.bins.forEach((v,i) => { wSum += v * BIN_MID[i]; });
+  const avg = d.n > 0 ? wSum / d.n : 0;
+
+  const tr = document.createElement('tr');
+  let cells = `<td class="date-cell">
+    <span class="dow" style="background:${dowColor}"></span>
+    <span class="date-label">${d.day}（${dowName}）</span>
+  </td>`;
+
+  d.bins.forEach((v, i) => {
+    const c = cellColor(v, maxCell);
+    cells += `<td><div class="heat-cell ${v===0?'v0':''}"
+      style="background:${c.bg};color:${c.fg};${c.border?'border:'+c.border:''}">
+      ${v === 0 ? '—' : v}</div></td>`;
+  });
+
+  cells += `<td class="total-cell">${d.n}台</td>`;
+  cells += `<td class="avg-cell">${avgChip(avg)}</td>`;
+  tr.innerHTML = cells;
+  tbody.appendChild(tr);
+});
+
+// footer totals
+const tfoot = document.getElementById('tfoot');
+const tr = document.createElement('tr');
+let foot = `<td class="date-cell" style="color:var(--text-sub);font-size:12px;">合　計</td>`;
+binTotals.forEach((v,i) => {
+  const c = cellColor(v, Math.max(...binTotals));
+  foot += `<td><div class="heat-cell"
+    style="background:${c.bg};color:${c.fg};${c.border?'border:'+c.border:''}">
+    ${v === 0 ? '—' : v}</div></td>`;
+});
+let wSum = 0;
+binTotals.forEach((v,i) => { wSum += v * BIN_MID[i]; });
+const grandAvg = grandTotal > 0 ? wSum / grandTotal : 0;
+foot += `<td class="total-cell">${grandTotal}台</td>`;
+foot += `<td class="avg-cell">${avgChip(grandAvg)}</td>`;
+tr.innerHTML = foot;
+tfoot.appendChild(tr);
+
+function toggleTheme() {
+  const r = document.documentElement;
+  r.setAttribute('data-theme', r.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+</script>
+</body>
+</html>
