@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>金曜日 6週比較 — 7/24〜8/28</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+  integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4"
+  crossorigin="anonymous"></script>
+<style>
+:root {
+  --bg: #f5f6fa; --bg-surface: #ffffff; --text: #1a1d2e;
+  --text-sub: #5a5f7a; --text-mute: #9098b5; --border: #e4e7f0;
+  --shadow: 0 2px 12px rgba(60,70,120,.08); --radius: 12px;
+  --c1:#e5742c; --c2:#22b894; --c3:#3d78d0;
+  --c4:#9f4fb5; --c5:#dc7a10; --c6:#cc2a18;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#13151f; --bg-surface:#1e2130; --text:#e8eaf6;
+    --text-sub:#9098b5; --text-mute:#5a5f7a; --border:#2a2f45;
+    --shadow:0 2px 12px rgba(0,0,0,.3); }
+}
+:root[data-theme="light"] {
+  --bg:#f5f6fa; --bg-surface:#ffffff; --text:#1a1d2e;
+  --text-sub:#5a5f7a; --text-mute:#9098b5; --border:#e4e7f0;
+  --shadow:0 2px 12px rgba(60,70,120,.08);
+}
+:root[data-theme="dark"] {
+  --bg:#13151f; --bg-surface:#1e2130; --text:#e8eaf6;
+  --text-sub:#9098b5; --text-mute:#5a5f7a; --border:#2a2f45;
+  --shadow:0 2px 12px rgba(0,0,0,.3);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;
+  background:var(--bg); color:var(--text); font-size:14px; line-height:1.6; }
+
+header { background:var(--bg-surface); border-bottom:1px solid var(--border);
+  padding:14px 24px; display:flex; align-items:center; justify-content:space-between; }
+.breadcrumb { font-size:12px; color:var(--text-mute); }
+h1 { font-size:18px; font-weight:700; margin:0; }
+.meta { font-size:12px; color:var(--text-mute); margin-top:2px; }
+.theme-btn { background:none; border:1px solid var(--border); border-radius:6px;
+  padding:4px 10px; cursor:pointer; color:var(--text-sub); font-size:12px; }
+
+main { max-width:1060px; margin:0 auto; padding:20px 16px 60px; }
+
+/* KPI 6-col */
+.kpi-6 { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:20px; }
+@media (max-width:900px) { .kpi-6 { grid-template-columns:repeat(3,1fr); } }
+@media (max-width:550px) { .kpi-6 { grid-template-columns:repeat(2,1fr); } }
+.kpi-card { background:var(--bg-surface); border-radius:var(--radius);
+  box-shadow:var(--shadow); overflow:hidden; }
+.kpi-head { padding:7px 10px; font-size:11px; font-weight:700;
+  color:#fff; display:flex; align-items:center; gap:4px; }
+.kpi-head .lbl { opacity:.8; font-size:9px; font-weight:400; margin-left:auto; }
+.kpi-body { padding:10px 10px; }
+.kpi-total { text-align:center; border-bottom:1px solid var(--border);
+  padding-bottom:8px; margin-bottom:6px; }
+.kpi-total .val { font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
+.kpi-total .sub { font-size:10px; color:var(--text-mute); margin-top:1px; }
+.kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.kpi-item .val { font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.2; text-align:center; }
+.kpi-item .sub { font-size:9px; color:var(--text-mute); text-align:center; }
+
+/* Card */
+.card { background:var(--bg-surface); border-radius:var(--radius); padding:18px 20px;
+  box-shadow:var(--shadow); margin-bottom:20px; }
+.card-title { font-size:13px; font-weight:700; color:var(--text-sub);
+  letter-spacing:.06em; margin-bottom:12px; }
+.chart-wrap { position:relative; height:280px; }
+
+.legend { display:flex; gap:14px; margin-bottom:10px; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:5px; font-size:12px; }
+.dot { width:10px; height:10px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.dash-line { width:18px; height:0; border-top:2px dashed; display:inline-block; vertical-align:middle; }
+
+/* Table */
+.tbl-wrap { overflow-x:auto; }
+table { border-collapse:collapse; font-variant-numeric:tabular-nums; min-width:900px; width:100%; }
+th { font-size:10px; color:var(--text-mute); letter-spacing:.04em;
+  padding:6px 5px; border-bottom:2px solid var(--border); text-align:right; white-space:nowrap; }
+th.hcol { text-align:left; }
+th.dhead { text-align:center; padding:5px 4px; font-size:10px; color:#fff;
+  border-bottom:none; font-weight:700; white-space:nowrap; }
+td { padding:5px 5px; border-bottom:1px solid var(--border); text-align:right;
+  font-size:11px; vertical-align:middle; }
+td.hcol { text-align:left; font-weight:600; color:var(--text-sub); white-space:nowrap; font-size:12px; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:rgba(128,128,128,.04); }
+.chip { display:inline-block; padding:1px 4px; border-radius:6px;
+  font-size:10px; font-weight:700; min-width:28px; text-align:center; }
+.s1 { background:#dbeafe; color:#1d4ed8; }
+.s2 { background:#d1fae5; color:#065f46; }
+.s3 { background:#fef9c3; color:#92400e; }
+.s4 { background:#fee2e2; color:#991b1b; }
+.s5 { background:#fce7f3; color:#831843; }
+.empty { color:var(--text-mute); }
+.night { font-size:10px; }
+
+.note-box { background:rgba(159,79,181,.08); border:1px solid rgba(159,79,181,.25);
+  border-radius:8px; padding:8px 14px; font-size:12px; color:var(--text-sub);
+  margin-bottom:20px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="breadcrumb">速度計測システム / 比較レポート</div>
+    <h1>金曜日 6週比較 — 7/24 · 7/31 · 8/7 · 8/14 · 8/21 · 8/28</h1>
+    <div class="meta">データ: /Users/fujiiritsuo/track-photo　✗ line1/line2 除外済み</div>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">テーマ切替</button>
+</header>
+
+<main>
+  <!-- KPI 6 cards -->
+  <div class="kpi-6">
+    <div class="kpi-card">
+      <div class="kpi-head" style="background:var(--c1)">7/24（金）<span class="lbl">7月第4週</span></div>
+      <div class="kpi-body">
+        <div class="kpi-total"><div class="val" style="color:var(--c1)">76</div><div class="sub">通過台数</div></div>
+        <div class="kpi-grid">
+          <div class="kpi-item"><div class="val">13</div><div class="sub">最低 km/h</div></div>
+          <div class="kpi-item"><div class="val">37.9</div><div class="sub">平均 km/h</div></div>
+          <div class="kpi-item"><div class="val">54</div><div class="sub">最高 km/h</div></div>
+          <div class="kpi-item"><div class="val">14時</div><div class="sub">最速帯</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-head" style="background:var(--c2)">7/31（金）<span class="lbl">7月第5週</span></div>
+      <div class="kpi-body">
+        <div class="kpi-total"><div class="val" style="color:var(--c2)">81</div><div class="sub">通過台数</div></div>
+        <div class="kpi-grid">
+          <div class="kpi-item"><div class="val">14</div><div class="sub">最低 km/h</div></div>
+          <div class="kpi-item"><div class="val">35.2</div><div class="sub">平均 km/h</div></div>
+          <div class="kpi-item"><div class="val">53</div><div class="sub">最高 km/h</div></div>
+          <div class="kpi-item"><div class="val">9時</div><div class="sub">最速帯</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-head" style="background:var(--c3)">8/7（金）<span class="lbl">8月第1週</span></div>
+      <div class="kpi-body">
+        <div class="kpi-total"><div class="val" style="color:var(--c3)">89</div><div class="sub">通過台数</div></div>
+        <div class="kpi-grid">
+          <div class="kpi-item"><div class="val">16</div><div class="sub">最低 km/h</div></div>
+          <div class="kpi-item"><div class="val">36.3</div><div class="sub">平均 km/h</div></div>
+          <div class="kpi-item"><div class="val">59</div><div class="sub">最高 km/h</div></div>
+          <div class="kpi-item"><div class="val">7時</div><div class="sub">最速帯</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-head" style="background:var(--c4)">8/14（金）<span class="lbl">お盆</span></div>
+      <div class="kpi-body">
+        <div class="kpi-total"><div class="val" style="color:var(--c4)">58</div><div class="sub">通過台数</div></div>
+        <div class="kpi-grid">
+          <div class="kpi-item"><div class="val">14</div><div class="sub">最低 km/h</div></div>
+          <div class="kpi-item"><div class="val">31.2</div><div class="sub">平均 km/h</div></div>
+          <div class="kpi-item"><div class="val">57</div><div class="sub">最高 km/h</div></div>
+          <div class="kpi-item"><div class="val">6時</div><div class="sub">最速帯</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-head" style="background:var(--c5)">8/21（金）<span class="lbl">8月第3週</span></div>
+      <div class="kpi-body">
+        <div class="kpi-total"><div class="val" style="color:var(--c5)">60</div><div class="sub">通過台数</div></div>
+        <div class="kpi-grid">
+          <div class="kpi-item"><div class="val">17</div><div class="sub">最低 km/h</div></div>
+          <div class="kpi-item"><div class="val">31.2</div><div class="sub">平均 km/h</div></div>
+          <div class="kpi-item"><div class="val">54</div><div class="sub">最高 km/h</div></div>
+          <div class="kpi-item"><div class="val">8時</div><div class="sub">最速帯</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-head" style="background:var(--c6)">8/28（金）<span class="lbl">8月第4週</span></div>
+      <div class="kpi-body">
+        <div class="kpi-total"><div class="val" style="color:var(--c6)">74</div><div class="sub">通過台数</div></div>
+        <div class="kpi-grid">
+          <div class="kpi-item"><div class="val">16</div><div class="sub">最低 km/h</div></div>
+          <div class="kpi-item"><div class="val">31.4</div><div class="sub">平均 km/h</div></div>
+          <div class="kpi-item"><div class="val">47</div><div class="sub">最高 km/h</div></div>
+          <div class="kpi-item"><div class="val">9時</div><div class="sub">最速帯</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    ⚠️ 8/14はお盆期間（8/11〜16）のため台数最少（58台）・平均最低（31.2 km/h）。8/21・8/28も平均31km/h台で、お盆後も速度の低下傾向が続いています。
+  </div>
+
+  <!-- 台数比較 -->
+  <div class="card">
+    <div class="card-title">時間帯別 通過台数 比較</div>
+    <div class="legend">
+      <div class="legend-item"><span class="dot" style="background:var(--c1)"></span>7/24</div>
+      <div class="legend-item"><span class="dot" style="background:var(--c2)"></span>7/31</div>
+      <div class="legend-item"><span class="dot" style="background:var(--c3)"></span>8/7</div>
+      <div class="legend-item"><span class="dot" style="background:var(--c4)"></span>8/14 破線=お盆</div>
+      <div class="legend-item"><span class="dot" style="background:var(--c5)"></span>8/21</div>
+      <div class="legend-item"><span class="dot" style="background:var(--c6)"></span>8/28</div>
+    </div>
+    <div class="chart-wrap"><canvas id="cntChart"></canvas></div>
+  </div>
+
+  <!-- 平均速度比較 -->
+  <div class="card">
+    <div class="card-title">時間帯別 平均速度 比較</div>
+    <div class="legend">
+      <div class="legend-item"><span class="dot" style="background:var(--c1)"></span>7/24</div>
+      <div class="legend-item"><span class="dot" style="background:var(--c2)"></span>7/31</div>
+      <div class="legend-item"><span class="dot" style="background:var(--c3)"></span>8/7</div>
+      <div class="legend-item"><span class="dot" style="background:var(--c4)"></span>8/14 破線=お盆</div>
+      <div class="legend-item"><span class="dot" style="background:var(--c5)"></span>8/21</div>
+      <div class="legend-item"><span class="dot" style="background:var(--c6)"></span>8/28</div>
+    </div>
+    <div class="chart-wrap"><canvas id="avgChart"></canvas></div>
+  </div>
+
+  <!-- 詳細テーブル -->
+  <div class="card">
+    <div class="card-title">時間帯別 詳細データ（台数 / 最低 / 平均 / 最高）</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="hcol" rowspan="2">時間帯</th>
+            <th class="dhead" colspan="4" style="background:var(--c1)">7/24（金）</th>
+            <th class="dhead" colspan="4" style="background:var(--c2)">7/31（金）</th>
+            <th class="dhead" colspan="4" style="background:var(--c3)">8/7（金）</th>
+            <th class="dhead" colspan="4" style="background:var(--c4)">8/14（金）</th>
+            <th class="dhead" colspan="4" style="background:var(--c5)">8/21（金）</th>
+            <th class="dhead" colspan="4" style="background:var(--c6)">8/28（金）</th>
+          </tr>
+          <tr>
+            <th>台</th><th>低</th><th>均</th><th>高</th>
+            <th>台</th><th>低</th><th>均</th><th>高</th>
+            <th>台</th><th>低</th><th>均</th><th>高</th>
+            <th>台</th><th>低</th><th>均</th><th>高</th>
+            <th>台</th><th>低</th><th>均</th><th>高</th>
+            <th>台</th><th>低</th><th>均</th><th>高</th>
+          </tr>
+        </thead>
+        <tbody id="tbl"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+const D1 = {
+  0:{n:3,min:40,avg:40.0,max:40}, 1:{n:5,min:40,avg:40.0,max:40},
+  2:{n:5,min:40,avg:40.0,max:40}, 5:{n:3,min:38,avg:40.0,max:42},
+  6:{n:3,min:29,avg:35.7,max:49}, 7:{n:3,min:23,avg:38.3,max:53},
+  8:{n:3,min:24,avg:30.7,max:37}, 9:{n:10,min:13,avg:36.7,max:51},
+ 10:{n:9,min:29,avg:41.7,max:52},11:{n:3,min:40,avg:40.0,max:40},
+ 12:{n:9,min:27,avg:39.8,max:53},13:{n:5,min:27,avg:36.0,max:50},
+ 14:{n:4,min:32,avg:43.0,max:54},15:{n:2,min:30,avg:33.0,max:36},
+ 16:{n:5,min:30,avg:32.0,max:40},17:{n:1,min:40,avg:40.0,max:40},
+ 19:{n:2,min:30,avg:30.0,max:30},20:{n:1,min:30,avg:30.0,max:30},
+};
+const D2 = {
+  1:{n:5,min:35,avg:35.0,max:35},  2:{n:4,min:25,avg:34.8,max:38},
+  3:{n:1,min:35,avg:35.0,max:35},  6:{n:1,min:34,avg:34.0,max:34},
+  7:{n:1,min:31,avg:31.0,max:31},  8:{n:8,min:14,avg:29.4,max:45},
+  9:{n:10,min:32,avg:40.6,max:53},10:{n:2,min:34,avg:40.0,max:46},
+ 11:{n:9,min:17,avg:34.0,max:46}, 12:{n:6,min:26,avg:37.3,max:52},
+ 13:{n:4,min:30,avg:37.5,max:42}, 14:{n:4,min:34,avg:38.8,max:42},
+ 15:{n:5,min:26,avg:35.6,max:45}, 16:{n:7,min:28,avg:36.0,max:42},
+ 17:{n:5,min:22,avg:27.8,max:35}, 18:{n:4,min:28,avg:32.0,max:38},
+ 19:{n:1,min:35,avg:35.0,max:35}, 20:{n:2,min:35,avg:36.5,max:38},
+ 21:{n:2,min:38,avg:38.0,max:38},
+};
+const D3 = {
+  0:{n:1,min:35,avg:35.0,max:35},  1:{n:1,min:35,avg:35.0,max:35},
+  2:{n:7,min:30,avg:35.7,max:40},  3:{n:5,min:30,avg:32.0,max:35},
+  5:{n:1,min:35,avg:35.0,max:35},  6:{n:5,min:36,avg:39.0,max:45},
+  7:{n:1,min:46,avg:46.0,max:46},  8:{n:4,min:30,avg:39.2,max:46},
+  9:{n:14,min:16,avg:34.2,max:59},10:{n:7,min:24,avg:37.6,max:52},
+ 11:{n:11,min:28,avg:35.5,max:45},12:{n:9,min:19,avg:39.0,max:51},
+ 13:{n:3,min:34,avg:39.0,max:46}, 14:{n:4,min:30,avg:39.2,max:52},
+ 15:{n:4,min:32,avg:37.0,max:46}, 16:{n:1,min:30,avg:30.0,max:30},
+ 17:{n:3,min:30,avg:37.7,max:42}, 18:{n:2,min:38,avg:42.0,max:46},
+ 19:{n:5,min:30,avg:31.0,max:35}, 20:{n:1,min:30,avg:30.0,max:30},
+};
+const D4 = {
+  1:{n:3,min:30,avg:33.3,max:35},  2:{n:4,min:30,avg:31.2,max:35},
+  5:{n:1,min:27,avg:27.0,max:27},  6:{n:3,min:32,avg:44.3,max:57},
+  7:{n:2,min:27,avg:38.5,max:50},  8:{n:2,min:33,avg:34.5,max:36},
+  9:{n:3,min:14,avg:26.7,max:37}, 10:{n:3,min:24,avg:25.0,max:27},
+ 11:{n:7,min:20,avg:29.1,max:37}, 12:{n:3,min:22,avg:27.0,max:32},
+ 13:{n:6,min:24,avg:33.2,max:49}, 14:{n:6,min:22,avg:29.2,max:34},
+ 15:{n:1,min:25,avg:25.0,max:25}, 16:{n:3,min:30,avg:30.0,max:30},
+ 17:{n:2,min:22,avg:25.5,max:29}, 18:{n:4,min:34,avg:36.0,max:38},
+ 19:{n:5,min:30,avg:31.0,max:35},
+};
+const D5 = {
+  1:{n:1,min:40,avg:40.0,max:40},
+  6:{n:4,min:30,avg:31.8,max:37},
+  7:{n:1,min:21,avg:21.0,max:21},
+  8:{n:6,min:20,avg:34.7,max:47},
+  9:{n:11,min:17,avg:31.4,max:41},
+ 10:{n:5,min:26,avg:28.6,max:31},
+ 11:{n:7,min:27,avg:33.0,max:40},
+ 12:{n:9,min:23,avg:31.3,max:54},
+ 13:{n:3,min:23,avg:29.3,max:39},
+ 14:{n:4,min:30,avg:30.0,max:30},
+ 15:{n:2,min:30,avg:30.0,max:30},
+ 16:{n:2,min:30,avg:30.0,max:30},
+ 17:{n:2,min:30,avg:30.0,max:30},
+ 18:{n:3,min:30,avg:30.0,max:30},
+};
+const D6 = {
+  0:{n:2,min:30,avg:30.0,max:30},
+  1:{n:4,min:30,avg:30.0,max:30},
+  2:{n:2,min:30,avg:30.0,max:30},
+  6:{n:1,min:30,avg:30.0,max:30},
+  8:{n:9,min:16,avg:31.7,max:47},
+  9:{n:9,min:32,avg:39.1,max:46},
+ 10:{n:7,min:24,avg:29.9,max:37},
+ 11:{n:7,min:23,avg:29.4,max:41},
+ 12:{n:12,min:23,avg:30.4,max:39},
+ 13:{n:3,min:23,avg:32.3,max:45},
+ 14:{n:2,min:29,avg:29.5,max:30},
+ 15:{n:4,min:27,avg:35.5,max:45},
+ 16:{n:4,min:18,avg:27.2,max:41},
+ 17:{n:6,min:24,avg:28.2,max:34},
+ 18:{n:2,min:27,avg:28.5,max:30},
+};
+
+const DAYS  = [D1, D2, D3, D4, D5, D6];
+const CLRS  = ['#e5742c','#22b894','#3d78d0','#9f4fb5','#dc7a10','#cc2a18'];
+const LBLS  = ['7/24','7/31','8/7','8/14(お盆)','8/21','8/28'];
+const NIGHT = new Set([0,1,2,3,4,5]);
+const HOURS = Array.from({length:22}, (_,i) => i);
+
+function arr(D, key) {
+  return HOURS.map(h => D[h] ? D[h][key] : null);
+}
+
+function makeDS(D, i, key, cfg={}) {
+  return {
+    label: LBLS[i],
+    data: arr(D, key),
+    borderColor: CLRS[i],
+    backgroundColor: CLRS[i] + '22',
+    borderWidth: i===3 ? 1.5 : 2,
+    borderDash: i===3 ? [6,4] : [],
+    pointRadius: HOURS.map(h => D[h] ? 3 : 0),
+    pointBackgroundColor: CLRS[i],
+    tension: 0.3,
+    spanGaps: false,
+    ...cfg
+  };
+}
+
+const ticksFmt = { font:{ size:10 }, color:'#9098b5' };
+const gridCol  = 'rgba(128,128,128,.1)';
+
+// Count chart
+new Chart(document.getElementById('cntChart'), {
+  type:'line',
+  data: {
+    labels: HOURS.map(h => h+'時'),
+    datasets: DAYS.map((D,i) => makeDS(D, i, 'n', {fill:false}))
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index', intersect:false},
+    plugins:{
+      legend:{display:false},
+      tooltip:{ callbacks:{ label: ctx => `${LBLS[ctx.datasetIndex]}: ${ctx.parsed.y ?? '—'}台` } }
+    },
+    scales:{
+      x:{ grid:{color:gridCol}, ticks:ticksFmt },
+      y:{ min:0, grid:{color:gridCol}, ticks:{...ticksFmt, callback:v=>v+'台'} }
+    }
+  }
+});
+
+// Avg speed chart
+new Chart(document.getElementById('avgChart'), {
+  type:'line',
+  data: {
+    labels: HOURS.map(h => h+'時'),
+    datasets: DAYS.map((D,i) => makeDS(D, i, 'avg', {fill:false}))
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index', intersect:false},
+    plugins:{
+      legend:{display:false},
+      tooltip:{ callbacks:{ label: ctx => `${LBLS[ctx.datasetIndex]}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1)+' km/h' : '—'}` } }
+    },
+    scales:{
+      x:{ grid:{color:gridCol}, ticks:ticksFmt },
+      y:{ min:0, max:60, grid:{color:gridCol}, ticks:{...ticksFmt, callback:v=>v+' km/h'} }
+    }
+  }
+});
+
+// Table
+function chipClass(v) {
+  if (v == null) return '';
+  if (v < 30) return 's1'; if (v < 35) return 's2';
+  if (v < 40) return 's3'; if (v < 50) return 's4'; return 's5';
+}
+function cell(D, h) {
+  if (!D[h]) return '<td class="empty">—</td><td class="empty">—</td><td class="empty">—</td><td class="empty">—</td>';
+  const d = D[h];
+  return `<td>${d.n}</td><td>${d.min}</td><td><span class="chip ${chipClass(d.avg)}">${d.avg.toFixed(1)}</span></td><td>${d.max}</td>`;
+}
+
+const tbody = document.getElementById('tbl');
+HOURS.forEach(h => {
+  const hasSome = DAYS.some(D => D[h]);
+  if (!hasSome) return;
+  const night = NIGHT.has(h) ? ' <span class="night">🌙</span>' : '';
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="hcol">${h}時台${night}</td>` + DAYS.map(D => cell(D,h)).join('');
+  tbody.appendChild(tr);
+});
+
+function toggleTheme() {
+  const r = document.documentElement;
+  r.setAttribute('data-theme', r.getAttribute('data-theme')==='dark'?'light':'dark');
+}
+</script>
+</body>
+</html>

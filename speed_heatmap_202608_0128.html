@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>速度計測ヒートマップ 2026年8/1〜28</title>
+<style>
+:root {
+  --bg-page:#f2f4f8; --bg-surface:#ffffff; --bg-row:#f7f8fc;
+  --text-pri:#1b2236; --text-sec:#4e5d7a; --text-mute:#7d8da8;
+  --border:#cdd3e6; --border-lt:#e4e8f2;
+  --shadow:0 1px 4px rgba(27,34,54,.07),0 4px 16px rgba(27,34,54,.05);
+}
+@media (prefers-color-scheme:dark) {
+  :root {
+    --bg-page:#111520; --bg-surface:#1a1e2c; --bg-row:#1e2335;
+    --text-pri:#dde2f0; --text-sec:#8a96b4; --text-mute:#5a647e;
+    --border:#252d44; --border-lt:#1f2640;
+    --shadow:0 1px 4px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  }
+}
+:root[data-theme="dark"] {
+  --bg-page:#111520; --bg-surface:#1a1e2c; --bg-row:#1e2335;
+  --text-pri:#dde2f0; --text-sec:#8a96b4; --text-mute:#5a647e;
+  --border:#252d44; --border-lt:#1f2640;
+  --shadow:0 1px 4px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+}
+:root[data-theme="light"] {
+  --bg-page:#f2f4f8; --bg-surface:#ffffff; --bg-row:#f7f8fc;
+  --text-pri:#1b2236; --text-sec:#4e5d7a; --text-mute:#7d8da8;
+  --border:#cdd3e6; --border-lt:#e4e8f2;
+  --shadow:0 1px 4px rgba(27,34,54,.07),0 4px 16px rgba(27,34,54,.05);
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+body {
+  background:var(--bg-page); color:var(--text-pri);
+  font-family:-apple-system,'Hiragino Sans','Yu Gothic UI','Meiryo',sans-serif;
+  font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.page { max-width:1280px; margin:0 auto; padding:28px 24px 60px; display:flex; flex-direction:column; gap:22px; }
+.breadcrumb { font-size:11px; color:var(--text-mute); letter-spacing:.03em; }
+.breadcrumb span { color:var(--text-sec); }
+.title-block { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.title-block h1 { font-size:26px; font-weight:700; letter-spacing:-.02em; line-height:1.2; }
+.meta { font-size:11px; color:var(--text-mute); margin-top:5px; line-height:1.8; }
+.btn { background:var(--bg-surface); border:1px solid var(--border); border-radius:6px;
+       padding:6px 14px; font-size:12px; font-family:inherit; color:var(--text-sec); cursor:pointer; }
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.kpi-card {
+  background:var(--bg-surface); border:1px solid var(--border-lt);
+  border-radius:10px; padding:20px 22px 18px; box-shadow:var(--shadow);
+  position:relative; overflow:hidden;
+}
+.kpi-card::before {
+  content:''; position:absolute; top:0; left:0; right:0;
+  height:4px; border-radius:10px 10px 0 0;
+}
+.kpi-card:nth-child(1)::before { background:#3d78d0; }
+.kpi-card:nth-child(2)::before { background:#dc7a10; }
+.kpi-card:nth-child(3)::before { background:#cc2a18; }
+.kpi-card:nth-child(4)::before { background:#22b894; }
+.kpi-lbl { font-size:11px; color:var(--text-mute); letter-spacing:.04em; text-transform:uppercase; margin-bottom:6px; }
+.kpi-val { font-size:32px; font-weight:700; font-variant-numeric:tabular-nums;
+           font-family:'SF Mono','Courier New',monospace; line-height:1.1; letter-spacing:-.02em; }
+.kpi-unit { font-size:16px; font-weight:400; color:var(--text-sec); }
+.kpi-sub { font-size:12px; color:var(--text-sec); margin-top:6px; }
+.wmax-panel {
+  background:var(--bg-surface); border:1px solid var(--border-lt);
+  border-radius:10px; padding:20px 22px; box-shadow:var(--shadow);
+}
+.panel-title {
+  font-size:12px; font-weight:700; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-sec); margin-bottom:14px;
+}
+.wmax-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; }
+.wmax-card {
+  background:var(--bg-row); border:1px solid var(--border-lt);
+  border-radius:8px; padding:14px 10px 12px; text-align:center;
+  position:relative; overflow:hidden;
+}
+.wmax-top { height:3px; position:absolute; top:0; left:0; right:0; border-radius:8px 8px 0 0; }
+.wmax-dow { font-size:11px; font-weight:700; margin-bottom:5px; }
+.wmax-date { font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; }
+.wmax-cnt { font-size:11px; color:var(--text-sec); margin-top:4px; }
+.hm-panel {
+  background:var(--bg-surface); border:1px solid var(--border-lt);
+  border-radius:10px; padding:20px 22px 18px; box-shadow:var(--shadow); overflow-x:auto;
+}
+.hm-subtitle { font-size:12px; color:var(--text-sec); margin-bottom:16px; }
+table.hm {
+  border-collapse:collapse; font-size:11px; font-variant-numeric:tabular-nums;
+  font-family:'SF Mono','Courier New',monospace; min-width:100%;
+}
+table.hm th, table.hm td { padding:2px 4px; }
+table.hm thead th {
+  text-align:center; font-size:10px; font-weight:700;
+  color:var(--text-mute); border-bottom:1px solid var(--border);
+  min-width:26px; white-space:nowrap;
+}
+table.hm thead th.th-hour { text-align:right; padding-right:8px; min-width:36px; }
+.dn { font-size:11px; font-weight:700; display:block; }
+.dw { font-size:9px; color:var(--text-mute); display:block; }
+.mx { color:gold; font-size:8px; display:block; }
+.wed .dn,.wed .dw{color:#7060c8;} .thu .dn,.thu .dw{color:#dc7a10;}
+.fri .dn,.fri .dw{color:#cc2a18;} .sat .dn,.sat .dw{color:#b050a0;}
+.sun .dn,.sun .dw{color:#7898b4;} .mon .dn,.mon .dw{color:#3d78d0;}
+.tue .dn,.tue .dw{color:#22b894;}
+.missing .dn,.missing .dw{color:var(--text-mute)!important;opacity:.4;}
+table.hm tbody th {
+  text-align:right; padding-right:8px;
+  color:var(--text-mute); font-size:10px; font-weight:400; white-space:nowrap;
+}
+table.hm tbody td {
+  text-align:center; height:22px; min-width:26px;
+  border-radius:2px; font-size:10px; font-weight:600; color:rgba(0,0,0,.75);
+}
+:root[data-theme="dark"] table.hm tbody td { color:rgba(255,255,255,.85); }
+table.hm tbody td.zero { color:var(--border); }
+table.hm tbody td.missing-cell { background:var(--bg-row)!important; color:var(--border-lt); }
+table.hm tfoot td {
+  text-align:center; font-weight:700; font-size:11px;
+  color:var(--text-pri); border-top:2px solid var(--border); padding-top:4px;
+}
+table.hm tfoot td.th-hour { text-align:right; padding-right:8px; color:var(--text-sec); font-weight:400; }
+table.hm tfoot td.total-sum { color:#3d78d0; }
+.legend-row {
+  display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  font-size:11px; color:var(--text-sec); margin-top:14px; padding-top:12px;
+  border-top:1px solid var(--border-lt);
+}
+.leg-item { display:flex; align-items:center; gap:4px; }
+.leg-swatch { width:14px; height:14px; border-radius:2px; border:1px solid rgba(0,0,0,.08); flex-shrink:0; }
+.legend-sep { color:var(--border); margin:0 4px; }
+.footer-note { font-size:11px; color:var(--text-mute); line-height:1.8; }
+@media (max-width:800px) {
+  .kpi-row { grid-template-columns:1fr 1fr; }
+  .wmax-grid { grid-template-columns:repeat(4,1fr); }
+  .kpi-val { font-size:24px; }
+}
+@media (prefers-reduced-motion:reduce) { * { transition:none!important; } }
+</style>
+</head><body><div class="page">
+<div class="breadcrumb">速度計測システム <span>/</span> 時間帯 × 日別 ヒートマップ</div>
+<div class="title-block"><div>
+  <h1>2026年8/1〜28 — 時間帯別 通過台数</h1>
+  <p class="meta">期間: 8/1 (土) 〜 8/28 (金)　／　記録: 0時〜23時　／　データ: /Users/fujiiritsuo/track-photo　／　✗ line1.jpg 除外　／　生成: 2026-08-28</p>
+</div><button class="btn" onclick="toggleTheme()">テーマ切替</button></div>
+<div class="kpi-row">
+<div class="kpi-card"><div class="kpi-lbl">総台数</div><div class="kpi-val">793<span class="kpi-unit">台</span></div><div class="kpi-sub">8/1〜8/28（18稼働日）</div></div>
+<div class="kpi-card"><div class="kpi-lbl">ピーク時間帯</div><div class="kpi-val">9<span class="kpi-unit">時台</span></div><div class="kpi-sub">月間計 124台</div></div>
+<div class="kpi-card"><div class="kpi-lbl">最多台数</div><div class="kpi-val">14<span class="kpi-unit">台</span></div><div class="kpi-sub">8/4(火) 9時台</div></div>
+<div class="kpi-card"><div class="kpi-lbl">稼働日数</div><div class="kpi-val">18<span class="kpi-unit">日</span></div><div class="kpi-sub">欠測: 8, 9, 10, 11, 16, 23, 24, 26, 27日</div></div>
+</div>
+<div class="wmax-panel">
+  <div class="panel-title">曜日別 最多台数日　<span style="font-weight:400;color:var(--text-mute);">― 各曜日で台数が最も多かった日</span></div>
+  <div class="wmax-grid">
+<div class="wmax-card"><div class="wmax-top" style="background:#b050a0;"></div><div class="wmax-dow" style="color:#b050a0;">土曜日</div><div class="wmax-date" style="color:#b050a0;">8/1</div><div class="wmax-cnt">43台</div></div>
+<div class="wmax-card"><div class="wmax-top" style="background:#7898b4;"></div><div class="wmax-dow" style="color:#7898b4;">日曜日</div><div class="wmax-date" style="color:#7898b4;">8/2</div><div class="wmax-cnt">17台</div></div>
+<div class="wmax-card"><div class="wmax-top" style="background:#3d78d0;"></div><div class="wmax-dow" style="color:#3d78d0;">月曜日</div><div class="wmax-date" style="color:#3d78d0;">8/17</div><div class="wmax-cnt">60台</div></div>
+<div class="wmax-card"><div class="wmax-top" style="background:#22b894;"></div><div class="wmax-dow" style="color:#22b894;">火曜日</div><div class="wmax-date" style="color:#22b894;">8/4</div><div class="wmax-cnt">56台</div></div>
+<div class="wmax-card"><div class="wmax-top" style="background:#7060c8;"></div><div class="wmax-dow" style="color:#7060c8;">水曜日</div><div class="wmax-date" style="color:#7060c8;">8/12</div><div class="wmax-cnt">37台</div></div>
+<div class="wmax-card"><div class="wmax-top" style="background:#dc7a10;"></div><div class="wmax-dow" style="color:#dc7a10;">木曜日</div><div class="wmax-date" style="color:#dc7a10;">8/6</div><div class="wmax-cnt">61台</div></div>
+<div class="wmax-card"><div class="wmax-top" style="background:#cc2a18;"></div><div class="wmax-dow" style="color:#cc2a18;">金曜日</div><div class="wmax-date" style="color:#cc2a18;">8/7</div><div class="wmax-cnt">92台</div></div>
+  </div></div>
+<div class="hm-panel">
+<div class="panel-title">時間帯 × 日別 台数ヒートマップ</div>
+<div class="hm-subtitle">各セルは当該時間帯に通過した台数。セル色は台数レベルを示す（凡例は表下）。</div>
+<table class="hm"><thead><tr><th class="th-hour">時刻</th>
+<th class="sat"><span class="dn">1</span><span class="dw">土</span><span class="mx">★</span></th>
+<th class="sun"><span class="dn">2</span><span class="dw">日</span><span class="mx">★</span></th>
+<th class="mon"><span class="dn">3</span><span class="dw">月</span></th>
+<th class="tue"><span class="dn">4</span><span class="dw">火</span><span class="mx">★</span></th>
+<th class="wed"><span class="dn">5</span><span class="dw">水</span></th>
+<th class="thu"><span class="dn">6</span><span class="dw">木</span><span class="mx">★</span></th>
+<th class="fri"><span class="dn">7</span><span class="dw">金</span><span class="mx">★</span></th>
+<th class="missing"><span class="dn">8</span><span class="dw">土</span></th>
+<th class="missing"><span class="dn">9</span><span class="dw">日</span></th>
+<th class="missing"><span class="dn">10</span><span class="dw">月</span></th>
+<th class="missing"><span class="dn">11</span><span class="dw">火</span></th>
+<th class="wed"><span class="dn">12</span><span class="dw">水</span><span class="mx">★</span></th>
+<th class="thu"><span class="dn">13</span><span class="dw">木</span></th>
+<th class="fri"><span class="dn">14</span><span class="dw">金</span></th>
+<th class="sat"><span class="dn">15</span><span class="dw">土</span></th>
+<th class="missing"><span class="dn">16</span><span class="dw">日</span></th>
+<th class="mon"><span class="dn">17</span><span class="dw">月</span><span class="mx">★</span></th>
+<th class="tue"><span class="dn">18</span><span class="dw">火</span></th>
+<th class="wed"><span class="dn">19</span><span class="dw">水</span></th>
+<th class="thu"><span class="dn">20</span><span class="dw">木</span></th>
+<th class="fri"><span class="dn">21</span><span class="dw">金</span></th>
+<th class="sat"><span class="dn">22</span><span class="dw">土</span></th>
+<th class="missing"><span class="dn">23</span><span class="dw">日</span></th>
+<th class="missing"><span class="dn">24</span><span class="dw">月</span></th>
+<th class="tue"><span class="dn">25</span><span class="dw">火</span></th>
+<th class="missing"><span class="dn">26</span><span class="dw">水</span></th>
+<th class="missing"><span class="dn">27</span><span class="dw">木</span></th>
+<th class="fri"><span class="dn">28</span><span class="dw">金</span></th>
+</tr></thead><tbody>
+<tr><th>00時</th>
+<td class="zero" style="background:transparent" title="8/1 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 0時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/7 0時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/14 0時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/15 0時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/17 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/18 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/21 0時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/22 0時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 0時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/28 0時台: 2台">2</td>
+</tr>
+<tr><th>01時</th>
+<td class="zero" style="background:transparent" title="8/1 1時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 1時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 1時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 1時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 1時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 1時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/7 1時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 1時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 1時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/14 1時台: 3台">3</td>
+<td class="" style="background:#FECB7A" title="8/15 1時台: 4台">4</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/17 1時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/18 1時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 1時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/20 1時台: 3台">3</td>
+<td class="" style="background:#FFF0D6" title="8/21 1時台: 1台">1</td>
+<td class="zero" style="background:transparent" title="8/22 1時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 1時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/28 1時台: 4台">4</td>
+</tr>
+<tr><th>02時</th>
+<td class="zero" style="background:transparent" title="8/1 2時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 2時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 2時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 2時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 2時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 2時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/7 2時台: 7台">7</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 2時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 2時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/14 2時台: 4台">4</td>
+<td class="" style="background:#FFF0D6" title="8/15 2時台: 3台">3</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/17 2時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/18 2時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 2時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/20 2時台: 5台">5</td>
+<td class="zero" style="background:transparent" title="8/21 2時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/22 2時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 2時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/28 2時台: 2台">2</td>
+</tr>
+<tr><th>03時</th>
+<td class="zero" style="background:transparent" title="8/1 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 3時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/7 3時台: 5台">5</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/14 3時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/15 3時台: 2台">2</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/17 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/18 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/21 3時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/22 3時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 3時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/28 3時台: 0台"></td>
+</tr>
+<tr><th>04時</th>
+<td class="zero" style="background:transparent" title="8/1 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/7 4時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/14 4時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/15 4時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/17 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/18 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/21 4時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/22 4時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 4時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/28 4時台: 0台"></td>
+</tr>
+<tr><th>05時</th>
+<td class="zero" style="background:transparent" title="8/1 5時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/2 5時台: 1台">1</td>
+<td class="" style="background:#FFF0D6" title="8/3 5時台: 1台">1</td>
+<td class="zero" style="background:transparent" title="8/4 5時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/5 5時台: 1台">1</td>
+<td class="zero" style="background:transparent" title="8/6 5時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/7 5時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 5時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 5時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/14 5時台: 1台">1</td>
+<td class="zero" style="background:transparent" title="8/15 5時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/17 5時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/18 5時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 5時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 5時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/21 5時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/22 5時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 5時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/28 5時台: 0台"></td>
+</tr>
+<tr><th>06時</th>
+<td class="" style="background:#FECB7A" title="8/1 6時台: 5台">5</td>
+<td class="" style="background:#FFF0D6" title="8/2 6時台: 3台">3</td>
+<td class="" style="background:#FFF0D6" title="8/3 6時台: 3台">3</td>
+<td class="" style="background:#FFF0D6" title="8/4 6時台: 2台">2</td>
+<td class="" style="background:#FFF0D6" title="8/5 6時台: 2台">2</td>
+<td class="" style="background:#FFF0D6" title="8/6 6時台: 2台">2</td>
+<td class="" style="background:#FECB7A" title="8/7 6時台: 5台">5</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 6時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 6時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/14 6時台: 3台">3</td>
+<td class="zero" style="background:transparent" title="8/15 6時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/17 6時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/18 6時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 6時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 6時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/21 6時台: 4台">4</td>
+<td class="zero" style="background:transparent" title="8/22 6時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 6時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/28 6時台: 1台">1</td>
+</tr>
+<tr><th>07時</th>
+<td class="" style="background:#FFF0D6" title="8/1 7時台: 1台">1</td>
+<td class="zero" style="background:transparent" title="8/2 7時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/3 7時台: 2台">2</td>
+<td class="" style="background:#FFF0D6" title="8/4 7時台: 1台">1</td>
+<td class="" style="background:#FFF0D6" title="8/5 7時台: 2台">2</td>
+<td class="" style="background:#FFF0D6" title="8/6 7時台: 1台">1</td>
+<td class="" style="background:#FFF0D6" title="8/7 7時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 7時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 7時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/14 7時台: 2台">2</td>
+<td class="" style="background:#FFF0D6" title="8/15 7時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/17 7時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/18 7時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 7時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 7時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/21 7時台: 1台">1</td>
+<td class="" style="background:#FFF0D6" title="8/22 7時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 7時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/28 7時台: 0台"></td>
+</tr>
+<tr><th>08時</th>
+<td class="" style="background:#FBA337" title="8/1 8時台: 9台">9</td>
+<td class="zero" style="background:transparent" title="8/2 8時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/3 8時台: 1台">1</td>
+<td class="" style="background:#FECB7A" title="8/4 8時台: 4台">4</td>
+<td class="zero" style="background:transparent" title="8/5 8時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/6 8時台: 7台">7</td>
+<td class="" style="background:#FECB7A" title="8/7 8時台: 4台">4</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/12 8時台: 3台">3</td>
+<td class="zero" style="background:transparent" title="8/13 8時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/14 8時台: 2台">2</td>
+<td class="" style="background:#FECB7A" title="8/15 8時台: 4台">4</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/17 8時台: 2台">2</td>
+<td class="" style="background:#FECB7A" title="8/18 8時台: 4台">4</td>
+<td class="zero" style="background:transparent" title="8/19 8時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 8時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/21 8時台: 6台">6</td>
+<td class="" style="background:#FECB7A" title="8/22 8時台: 4台">4</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 8時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FBA337" title="8/28 8時台: 9台">9</td>
+</tr>
+<tr><th>09時</th>
+<td class="" style="background:#FECB7A" title="8/1 9時台: 7台">7</td>
+<td class="zero" style="background:transparent" title="8/2 9時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/3 9時台: 4台">4</td>
+<td class="" style="background:#E87012" title="8/4 9時台: 14台">14</td>
+<td class="zero" style="background:transparent" title="8/5 9時台: 0台"></td>
+<td class="" style="background:#E87012" title="8/6 9時台: 14台">14</td>
+<td class="" style="background:#E87012" title="8/7 9時台: 14台">14</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/12 9時台: 8台">8</td>
+<td class="zero" style="background:transparent" title="8/13 9時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/14 9時台: 3台">3</td>
+<td class="zero" style="background:transparent" title="8/15 9時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/17 9時台: 5台">5</td>
+<td class="" style="background:#FECB7A" title="8/18 9時台: 7台">7</td>
+<td class="zero" style="background:transparent" title="8/19 9時台: 0台"></td>
+<td class="" style="background:#FBA337" title="8/20 9時台: 10台">10</td>
+<td class="" style="background:#FBA337" title="8/21 9時台: 11台">11</td>
+<td class="" style="background:#FECB7A" title="8/22 9時台: 8台">8</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FBA337" title="8/25 9時台: 10台">10</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FBA337" title="8/28 9時台: 9台">9</td>
+</tr>
+<tr><th>10時</th>
+<td class="" style="background:#FECB7A" title="8/1 10時台: 4台">4</td>
+<td class="" style="background:#FFF0D6" title="8/2 10時台: 1台">1</td>
+<td class="" style="background:#FBA337" title="8/3 10時台: 13台">13</td>
+<td class="" style="background:#FECB7A" title="8/4 10時台: 5台">5</td>
+<td class="zero" style="background:transparent" title="8/5 10時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/6 10時台: 5台">5</td>
+<td class="" style="background:#FECB7A" title="8/7 10時台: 7台">7</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/12 10時台: 5台">5</td>
+<td class="zero" style="background:transparent" title="8/13 10時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/14 10時台: 3台">3</td>
+<td class="" style="background:#FFF0D6" title="8/15 10時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FBA337" title="8/17 10時台: 9台">9</td>
+<td class="" style="background:#FECB7A" title="8/18 10時台: 4台">4</td>
+<td class="zero" style="background:transparent" title="8/19 10時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/20 10時台: 7台">7</td>
+<td class="" style="background:#FECB7A" title="8/21 10時台: 5台">5</td>
+<td class="" style="background:#FECB7A" title="8/22 10時台: 5台">5</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FBA337" title="8/25 10時台: 9台">9</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/28 10時台: 7台">7</td>
+</tr>
+<tr><th>11時</th>
+<td class="" style="background:#FECB7A" title="8/1 11時台: 4台">4</td>
+<td class="" style="background:#FFF0D6" title="8/2 11時台: 2台">2</td>
+<td class="" style="background:#FECB7A" title="8/3 11時台: 8台">8</td>
+<td class="" style="background:#FBA337" title="8/4 11時台: 11台">11</td>
+<td class="zero" style="background:transparent" title="8/5 11時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/6 11時台: 8台">8</td>
+<td class="" style="background:#FBA337" title="8/7 11時台: 11台">11</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/12 11時台: 6台">6</td>
+<td class="zero" style="background:transparent" title="8/13 11時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/14 11時台: 7台">7</td>
+<td class="" style="background:#FECB7A" title="8/15 11時台: 4台">4</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FBA337" title="8/17 11時台: 13台">13</td>
+<td class="zero" style="background:transparent" title="8/18 11時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/19 11時台: 5台">5</td>
+<td class="" style="background:#FECB7A" title="8/20 11時台: 7台">7</td>
+<td class="" style="background:#FECB7A" title="8/21 11時台: 7台">7</td>
+<td class="" style="background:#FFF0D6" title="8/22 11時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 11時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/28 11時台: 7台">7</td>
+</tr>
+<tr><th>12時</th>
+<td class="" style="background:#FECB7A" title="8/1 12時台: 5台">5</td>
+<td class="" style="background:#FECB7A" title="8/2 12時台: 6台">6</td>
+<td class="" style="background:#FBA337" title="8/3 12時台: 9台">9</td>
+<td class="" style="background:#FBA337" title="8/4 12時台: 12台">12</td>
+<td class="" style="background:#FECB7A" title="8/5 12時台: 6台">6</td>
+<td class="" style="background:#FBA337" title="8/6 12時台: 11台">11</td>
+<td class="" style="background:#FBA337" title="8/7 12時台: 9台">9</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/12 12時台: 6台">6</td>
+<td class="zero" style="background:transparent" title="8/13 12時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/14 12時台: 3台">3</td>
+<td class="" style="background:#FECB7A" title="8/15 12時台: 6台">6</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/17 12時台: 7台">7</td>
+<td class="zero" style="background:transparent" title="8/18 12時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/19 12時台: 5台">5</td>
+<td class="" style="background:#FBA337" title="8/20 12時台: 9台">9</td>
+<td class="" style="background:#FBA337" title="8/21 12時台: 9台">9</td>
+<td class="" style="background:#FECB7A" title="8/22 12時台: 7台">7</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 12時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FBA337" title="8/28 12時台: 12台">12</td>
+</tr>
+<tr><th>13時</th>
+<td class="" style="background:#FFF0D6" title="8/1 13時台: 2台">2</td>
+<td class="" style="background:#FFF0D6" title="8/2 13時台: 2台">2</td>
+<td class="" style="background:#FECB7A" title="8/3 13時台: 4台">4</td>
+<td class="" style="background:#FFF0D6" title="8/4 13時台: 3台">3</td>
+<td class="" style="background:#FECB7A" title="8/5 13時台: 4台">4</td>
+<td class="" style="background:#FECB7A" title="8/6 13時台: 7台">7</td>
+<td class="" style="background:#FFF0D6" title="8/7 13時台: 3台">3</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/12 13時台: 3台">3</td>
+<td class="zero" style="background:transparent" title="8/13 13時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/14 13時台: 6台">6</td>
+<td class="" style="background:#FFF0D6" title="8/15 13時台: 2台">2</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/17 13時台: 4台">4</td>
+<td class="zero" style="background:transparent" title="8/18 13時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 13時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/20 13時台: 4台">4</td>
+<td class="" style="background:#FFF0D6" title="8/21 13時台: 3台">3</td>
+<td class="" style="background:#FFF0D6" title="8/22 13時台: 3台">3</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 13時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/28 13時台: 3台">3</td>
+</tr>
+<tr><th>14時</th>
+<td class="zero" style="background:transparent" title="8/1 14時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 14時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/3 14時台: 5台">5</td>
+<td class="" style="background:#FECB7A" title="8/4 14時台: 4台">4</td>
+<td class="" style="background:#FECB7A" title="8/5 14時台: 5台">5</td>
+<td class="" style="background:#FECB7A" title="8/6 14時台: 4台">4</td>
+<td class="" style="background:#FECB7A" title="8/7 14時台: 4台">4</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/12 14時台: 6台">6</td>
+<td class="zero" style="background:transparent" title="8/13 14時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/14 14時台: 6台">6</td>
+<td class="" style="background:#FFF0D6" title="8/15 14時台: 2台">2</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/17 14時台: 3台">3</td>
+<td class="zero" style="background:transparent" title="8/18 14時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/19 14時台: 3台">3</td>
+<td class="" style="background:#FFF0D6" title="8/20 14時台: 3台">3</td>
+<td class="" style="background:#FECB7A" title="8/21 14時台: 4台">4</td>
+<td class="zero" style="background:transparent" title="8/22 14時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 14時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/28 14時台: 2台">2</td>
+</tr>
+<tr><th>15時</th>
+<td class="zero" style="background:transparent" title="8/1 15時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 15時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 15時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 15時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 15時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/6 15時台: 2台">2</td>
+<td class="" style="background:#FECB7A" title="8/7 15時台: 4台">4</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 15時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 15時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/14 15時台: 1台">1</td>
+<td class="zero" style="background:transparent" title="8/15 15時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/17 15時台: 4台">4</td>
+<td class="zero" style="background:transparent" title="8/18 15時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 15時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 15時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/21 15時台: 2台">2</td>
+<td class="zero" style="background:transparent" title="8/22 15時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 15時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/28 15時台: 4台">4</td>
+</tr>
+<tr><th>16時</th>
+<td class="zero" style="background:transparent" title="8/1 16時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 16時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 16時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 16時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 16時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 16時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/7 16時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 16時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 16時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/14 16時台: 3台">3</td>
+<td class="zero" style="background:transparent" title="8/15 16時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/17 16時台: 4台">4</td>
+<td class="zero" style="background:transparent" title="8/18 16時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 16時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 16時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/21 16時台: 2台">2</td>
+<td class="zero" style="background:transparent" title="8/22 16時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 16時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/28 16時台: 4台">4</td>
+</tr>
+<tr><th>17時</th>
+<td class="" style="background:#FFF0D6" title="8/1 17時台: 3台">3</td>
+<td class="zero" style="background:transparent" title="8/2 17時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 17時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 17時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 17時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 17時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/7 17時台: 3台">3</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 17時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 17時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/14 17時台: 2台">2</td>
+<td class="zero" style="background:transparent" title="8/15 17時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/17 17時台: 2台">2</td>
+<td class="zero" style="background:transparent" title="8/18 17時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/19 17時台: 1台">1</td>
+<td class="zero" style="background:transparent" title="8/20 17時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/21 17時台: 2台">2</td>
+<td class="" style="background:#FFF0D6" title="8/22 17時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/25 17時台: 4台">4</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FECB7A" title="8/28 17時台: 6台">6</td>
+</tr>
+<tr><th>18時</th>
+<td class="" style="background:#FFF0D6" title="8/1 18時台: 2台">2</td>
+<td class="" style="background:#FFF0D6" title="8/2 18時台: 1台">1</td>
+<td class="zero" style="background:transparent" title="8/3 18時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 18時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 18時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 18時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/7 18時台: 2台">2</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 18時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 18時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/14 18時台: 4台">4</td>
+<td class="zero" style="background:transparent" title="8/15 18時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/17 18時台: 3台">3</td>
+<td class="zero" style="background:transparent" title="8/18 18時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/19 18時台: 1台">1</td>
+<td class="zero" style="background:transparent" title="8/20 18時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/21 18時台: 3台">3</td>
+<td class="zero" style="background:transparent" title="8/22 18時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/25 18時台: 3台">3</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/28 18時台: 2台">2</td>
+</tr>
+<tr><th>19時</th>
+<td class="" style="background:#FFF0D6" title="8/1 19時台: 1台">1</td>
+<td class="" style="background:#FFF0D6" title="8/2 19時台: 1台">1</td>
+<td class="zero" style="background:transparent" title="8/3 19時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 19時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 19時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 19時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/7 19時台: 5台">5</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 19時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 19時台: 0台"></td>
+<td class="" style="background:#FECB7A" title="8/14 19時台: 5台">5</td>
+<td class="zero" style="background:transparent" title="8/15 19時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/17 19時台: 2台">2</td>
+<td class="zero" style="background:transparent" title="8/18 19時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 19時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 19時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/21 19時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/22 19時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 19時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/28 19時台: 0台"></td>
+</tr>
+<tr><th>20時</th>
+<td class="zero" style="background:transparent" title="8/1 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 20時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/7 20時台: 1台">1</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/14 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/15 20時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="" style="background:#FFF0D6" title="8/17 20時台: 2台">2</td>
+<td class="zero" style="background:transparent" title="8/18 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/21 20時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/22 20時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 20時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/28 20時台: 0台"></td>
+</tr>
+<tr><th>21時</th>
+<td class="zero" style="background:transparent" title="8/1 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 21時台: 0台"></td>
+<td class="" style="background:#FFF0D6" title="8/7 21時台: 3台">3</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/14 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/15 21時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/17 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/18 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/21 21時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/22 21時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 21時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/28 21時台: 0台"></td>
+</tr>
+<tr><th>22時</th>
+<td class="zero" style="background:transparent" title="8/1 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/7 22時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/14 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/15 22時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/17 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/18 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/21 22時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/22 22時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 22時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/28 22時台: 0台"></td>
+</tr>
+<tr><th>23時</th>
+<td class="zero" style="background:transparent" title="8/1 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/2 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/3 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/4 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/5 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/6 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/7 23時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/12 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/13 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/14 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/15 23時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/17 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/18 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/19 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/20 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/21 23時台: 0台"></td>
+<td class="zero" style="background:transparent" title="8/22 23時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/25 23時台: 0台"></td>
+<td class="missing-cell">—</td>
+<td class="missing-cell">—</td>
+<td class="zero" style="background:transparent" title="8/28 23時台: 0台"></td>
+</tr>
+</tbody><tfoot><tr><td class="th-hour">合計</td>
+<td class="total-sum" title="8/1 日計: 43台">43</td>
+<td class="total-sum" title="8/2 日計: 17台">17</td>
+<td class="total-sum" title="8/3 日計: 50台">50</td>
+<td class="total-sum" title="8/4 日計: 56台">56</td>
+<td class="total-sum" title="8/5 日計: 20台">20</td>
+<td class="total-sum" title="8/6 日計: 61台">61</td>
+<td class="total-sum" title="8/7 日計: 92台">92</td>
+<td class="missing-cell">✗</td>
+<td class="missing-cell">✗</td>
+<td class="missing-cell">✗</td>
+<td class="missing-cell">✗</td>
+<td class="total-sum" title="8/12 日計: 37台">37</td>
+<td class="total-sum" title="8/13 日計: 0台">0</td>
+<td class="total-sum" title="8/14 日計: 58台">58</td>
+<td class="total-sum" title="8/15 日計: 31台">31</td>
+<td class="missing-cell">✗</td>
+<td class="total-sum" title="8/17 日計: 60台">60</td>
+<td class="total-sum" title="8/18 日計: 15台">15</td>
+<td class="total-sum" title="8/19 日計: 15台">15</td>
+<td class="total-sum" title="8/20 日計: 48台">48</td>
+<td class="total-sum" title="8/21 日計: 60台">60</td>
+<td class="total-sum" title="8/22 日計: 30台">30</td>
+<td class="missing-cell">✗</td>
+<td class="missing-cell">✗</td>
+<td class="total-sum" title="8/25 日計: 26台">26</td>
+<td class="missing-cell">✗</td>
+<td class="missing-cell">✗</td>
+<td class="total-sum" title="8/28 日計: 74台">74</td>
+</tr></tfoot></table>
+<div class="legend-row">
+<span style="color:var(--text-mute);font-weight:600;margin-right:4px;">合計</span>
+<div class="leg-item"><div class="leg-swatch" style="background:transparent;border:1px solid rgba(0,0,0,.1);"></div>0</div>
+<div class="leg-item"><div class="leg-swatch" style="background:#FFF0D6;border:1px solid rgba(0,0,0,.08);"></div>1–3</div>
+<div class="leg-item"><div class="leg-swatch" style="background:#FECB7A;border:1px solid rgba(0,0,0,.08);"></div>4–8</div>
+<div class="leg-item"><div class="leg-swatch" style="background:#FBA337;border:1px solid rgba(0,0,0,.08);"></div>9–13</div>
+<div class="leg-item"><div class="leg-swatch" style="background:#E87012;border:1px solid rgba(0,0,0,.08);"></div>14–18</div>
+<div class="leg-item"><div class="leg-swatch" style="background:#C44400;border:1px solid rgba(0,0,0,.08);"></div>19–23</div>
+<div class="leg-item"><div class="leg-swatch" style="background:#8C1A00;border:1px solid rgba(0,0,0,.08);"></div>24以上</div>
+<span class="legend-sep">│</span><span style="color:var(--text-mute);">文字 ★ 時間帯（同色）</span><span class="legend-sep">│</span><span style="color:gold;">★</span><span style="color:var(--text-mute);margin-left:3px;">曜日別最多台数日</span>
+</div>
+</div>
+<div class="footer-note">▲ 8/8はシステム停止（欠測）、8/9はシステム停止（欠測）、8/10はシステム停止（欠測）、8/11はシステム停止（欠測）、8/16はシステム停止（欠測）、8/23はシステム停止（欠測）、8/24はシステム停止（欠測）、8/26はシステム停止（欠測）、8/27はシステム停止（欠測）。</div>
+<script>
+function toggleTheme(){
+  const r=document.documentElement;
+  const dk=r.dataset.theme==='dark'||(r.dataset.theme===''&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+  r.dataset.theme=dk?'light':'dark';
+}
+</script>
+</div></body></html>
