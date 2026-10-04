@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>2026年9月4日 時間帯別速度分析</title>
+<style>
+:root{
+  --bg:#f2f4f8;--bg-surface:#ffffff;--text:#1a1d2e;
+  --text-sub:#5a5f7a;--text-mute:#9098b5;--border:#e4e7f0;--border-lt:#eeeff6;
+  --shadow:0 2px 12px rgba(60,70,120,.08);--radius:12px;
+  --fri:#cc2a18;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#111520;--bg-surface:#1a1e2c;--text:#dde2f0;
+        --text-sub:#8a96b4;--text-mute:#5a647e;--border:#252d44;--border-lt:#1f2640;
+        --shadow:0 2px 12px rgba(0,0,0,.3);}
+}
+:root[data-theme=dark]{--bg:#111520;--bg-surface:#1a1e2c;--text:#dde2f0;--text-sub:#8a96b4;--text-mute:#5a647e;--border:#252d44;--border-lt:#1f2640;}
+:root[data-theme=light]{--bg:#f2f4f8;--bg-surface:#ffffff;--text:#1a1d2e;--text-sub:#5a5f7a;--text-mute:#9098b5;--border:#e4e7f0;--border-lt:#eeeff6;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Hiragino Sans','Yu Gothic UI',sans-serif;font-size:14px;}
+.page{max-width:900px;margin:0 auto;padding:24px 20px 60px;display:flex;flex-direction:column;gap:20px;}
+.breadcrumb{font-size:11px;color:var(--text-mute);}
+.title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.title-row h1{font-size:22px;font-weight:700;letter-spacing:-.02em;}
+.title-tag{display:inline-block;background:var(--fri);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px;vertical-align:middle;letter-spacing:.04em;}
+.meta{font-size:11px;color:var(--text-mute);margin-top:4px;}
+.btn{background:var(--bg-surface);border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:12px;font-family:inherit;color:var(--text-sub);cursor:pointer;}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.kpi{background:var(--bg-surface);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0;}
+.kpi:nth-child(1)::before{background:#3d78d0}.kpi:nth-child(2)::before{background:#22b894}
+.kpi:nth-child(3)::before{background:var(--fri)}.kpi:nth-child(4)::before{background:#7060c8}
+.kpi:nth-child(5)::before{background:#dc7a10}
+.kpi-lbl{font-size:10px;color:var(--text-mute);letter-spacing:.04em;margin-bottom:4px;}
+.kpi-val{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
+.kpi-unit{font-size:12px;color:var(--text-sub);}
+.kpi-sub{font-size:11px;color:var(--text-sub);margin-top:4px;}
+.card{background:var(--bg-surface);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);}
+.card-title{font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.bar-chart{display:flex;align-items:flex-end;gap:3px;height:160px;padding-bottom:24px;position:relative;border-bottom:2px solid var(--border);}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:3px;height:100%;}
+.bar-col .bar{width:100%;background:var(--fri);opacity:.85;border-radius:3px 3px 0 0;transition:opacity .15s;}
+.bar-col .bar:hover{opacity:1;}
+.bar-col .bar.empty{background:transparent;}
+.bar-col .bar-lbl{font-size:9px;color:var(--text-mute);white-space:nowrap;transform:rotate(-45deg);transform-origin:top left;margin-top:6px;margin-left:6px;}
+.bar-col .bar-n{font-size:9px;color:var(--text-sub);font-weight:700;margin-bottom:2px;min-height:12px;}
+table.dist{border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:100%;font-size:11px;}
+table.dist thead th{font-size:10px;color:var(--text-mute);padding:5px 6px;border-bottom:2px solid var(--border);text-align:center;white-space:nowrap;letter-spacing:.03em;}
+table.dist thead th.th-hour{text-align:right;padding-right:8px;min-width:42px;}
+table.dist tbody th{text-align:right;padding-right:8px;font-size:10px;font-weight:400;color:var(--text-mute);white-space:nowrap;}
+table.dist tbody td{text-align:center;padding:3px 5px;height:24px;border-bottom:1px solid var(--border-lt);font-weight:600;border-radius:2px;}
+table.dist td.row-total{font-weight:700;color:var(--text);border-left:1px solid var(--border);}
+table.dist tfoot td{text-align:center;padding:5px 5px 3px;font-weight:700;font-size:12px;border-top:2px solid var(--border);color:var(--text);}
+table.dist tfoot td.foot-lbl{text-align:right;padding-right:8px;font-weight:400;font-size:11px;color:var(--text-sub);}
+table.dist tfoot td.foot-num{color:#3d78d0;}
+.bin-labels{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-lt);}
+.bin-chip{display:inline-block;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;}
+.s1{background:#dbeafe;color:#1d4ed8;}.s2{background:#d1fae5;color:#065f46;}
+.s3{background:#fef9c3;color:#92400e;}.s4{background:#fee2e2;color:#991b1b;}
+.s5{background:#fce7f3;color:#831843;}
+/* analysis notes */
+.notes-card{background:var(--bg-surface);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);}
+.notes-card .card-title{font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px;}
+.note-list{display:flex;flex-direction:column;gap:12px;}
+.note-item{display:flex;gap:14px;align-items:flex-start;}
+.note-icon{flex-shrink:0;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.note-icon.warn{background:#fef3c7;}
+.note-icon.alert{background:#fee2e2;}
+.note-icon.info{background:#dbeafe;}
+.note-icon.check{background:#d1fae5;}
+.note-body{flex:1;}
+.note-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.note-text{font-size:12px;color:var(--text-sub);line-height:1.7;}
+.note-text b{color:var(--text);}
+.note-divider{border:none;border-top:1px solid var(--border-lt);margin:4px 0;}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="breadcrumb">速度計測システム &rsaquo; 日別詳細レポート</div>
+<div class="title-row">
+  <div>
+    <h1>2026年 9月4日（金）<span class="title-tag">金曜</span></h1>
+    <p class="meta">データ: /Users/fujiiritsuo/track-photo &nbsp;|&nbsp; line1/line2 除外 &nbsp;|&nbsp; 車種区別なし</p>
+  </div>
+  <button class="btn" onclick="toggleTheme()">テーマ切替</button>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-lbl">総台数</div><div class="kpi-val">90<span class="kpi-unit"> 台</span></div></div>
+  <div class="kpi"><div class="kpi-lbl">平均速度</div><div class="kpi-val">28.8<span class="kpi-unit"> km/h</span></div></div>
+  <div class="kpi"><div class="kpi-lbl">ピーク時間帯</div><div class="kpi-val">12<span class="kpi-unit"> 時台</span></div><div class="kpi-sub">10台</div></div>
+  <div class="kpi"><div class="kpi-lbl">最低速度</div><div class="kpi-val">11<span class="kpi-unit"> km/h</span></div></div>
+  <div class="kpi"><div class="kpi-lbl">最高速度</div><div class="kpi-val">50<span class="kpi-unit"> km/h</span></div></div>
+</div>
+
+<div class="card">
+  <div class="card-title">時間帯別 通過台数</div>
+  <div class="bar-chart" id="barChart"></div>
+</div>
+
+<div class="card" style="overflow-x:auto;">
+  <div class="card-title">時間帯 &times; 速度帯（5km/h ピッチ）</div>
+  <table class="dist">
+    <thead><tr>
+      <th class="th-hour">時刻</th>
+      <th>10〜14</th><th>15〜19</th><th>20〜24</th><th>25〜29</th><th>30〜34</th><th>35〜39</th><th>40〜44</th><th>45〜49</th><th>50〜54</th><th>55〜59</th><th>60+</th>
+      <th style="border-left:1px solid var(--border)">合計</th>
+    </tr></thead>
+    <tbody>
+      <tr><th>00時</th><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#FBA337;color:#fff">2</td><td style="background:#FBA337;color:#fff">2</td><td style="background:#FBA337;color:#fff">2</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">6</td></tr><tr><th>01時</th><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#8C1A00;color:#fff">3</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">3</td></tr><tr><th>02時</th><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#8C1A00;color:#fff">3</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">3</td></tr><tr><th>05時</th><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#8C1A00;color:#fff">2</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">2</td></tr><tr><th>06時</th><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#C44400;color:#fff">2</td><td style="background:#FBA337;color:#fff">1</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">3</td></tr><tr><th>08時</th><td style="color:var(--text-mute)"></td><td style="background:#FBA337;color:#fff">1</td><td style="color:var(--text-mute)"></td><td style="background:#C44400;color:#fff">2</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#FBA337;color:#fff">1</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">4</td></tr><tr><th>09時</th><td style="color:var(--text-mute)"></td><td style="background:#FECB7A;color:inherit">1</td><td style="color:var(--text-mute)"></td><td style="background:#FBA337;color:#fff">2</td><td style="background:#FBA337;color:#fff">3</td><td style="background:#FBA337;color:#fff">3</td><td style="background:#FECB7A;color:inherit">1</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">10</td></tr><tr><th>10時</th><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#FECB7A;color:inherit">1</td><td style="background:#E87012;color:#fff">4</td><td style="background:#FBA337;color:#fff">3</td><td style="background:#FECB7A;color:inherit">1</td><td style="background:#FECB7A;color:inherit">1</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">10</td></tr><tr><th>11時</th><td style="background:#FECB7A;color:inherit">1</td><td style="color:var(--text-mute)"></td><td style="background:#FBA337;color:#fff">2</td><td style="background:#FBA337;color:#fff">2</td><td style="color:var(--text-mute)"></td><td style="background:#FECB7A;color:inherit">1</td><td style="background:#FECB7A;color:inherit">1</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">7</td></tr><tr><th>12時</th><td style="background:#FECB7A;color:inherit">1</td><td style="color:var(--text-mute)"></td><td style="background:#E87012;color:#fff">4</td><td style="background:#FBA337;color:#fff">3</td><td style="background:#FBA337;color:#fff">2</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">10</td></tr><tr><th>13時</th><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#FBA337;color:#fff">1</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#FBA337;color:#fff">1</td><td style="background:#C44400;color:#fff">2</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">4</td></tr><tr><th>14時</th><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#FBA337;color:#fff">2</td><td style="background:#FBA337;color:#fff">2</td><td style="color:var(--text-mute)"></td><td style="background:#FECB7A;color:inherit">1</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#FECB7A;color:inherit">1</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">6</td></tr><tr><th>15時</th><td style="background:#C44400;color:#fff">1</td><td style="color:var(--text-mute)"></td><td style="background:#C44400;color:#fff">1</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">2</td></tr><tr><th>16時</th><td style="background:#FBA337;color:#fff">1</td><td style="color:var(--text-mute)"></td><td style="background:#FBA337;color:#fff">1</td><td style="background:#C44400;color:#fff">2</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">4</td></tr><tr><th>17時</th><td style="color:var(--text-mute)"></td><td style="background:#FECB7A;color:inherit">1</td><td style="background:#FECB7A;color:inherit">1</td><td style="background:#FBA337;color:#fff">2</td><td style="background:#FBA337;color:#fff">2</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">6</td></tr><tr><th>18時</th><td style="color:var(--text-mute)"></td><td style="background:#FBA337;color:#fff">1</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#8C1A00;color:#fff">3</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">4</td></tr><tr><th>19時</th><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#8C1A00;color:#fff">2</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">2</td></tr><tr><th>20時</th><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="background:#FBA337;color:#fff">1</td><td style="background:#8C1A00;color:#fff">3</td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td style="color:var(--text-mute)"></td><td class="row-total">4</td></tr>
+    </tbody>
+    <tfoot><tr>
+      <td class="foot-lbl">合計</td>
+      <td class="foot-num">4</td><td class="foot-num">4</td><td class="foot-num">13</td><td class="foot-num">22</td><td class="foot-num">30</td><td class="foot-num">10</td><td class="foot-num">6</td><td class="foot-num"></td><td class="foot-num">1</td><td class="foot-num"></td><td class="foot-num"></td>
+      <td class="foot-num">90</td>
+    </tr></tfoot>
+  </table>
+  <div class="bin-labels">
+    <span class="bin-chip s1">10〜14</span><span class="bin-chip s1">15〜19</span><span class="bin-chip s1">20〜24</span><span class="bin-chip s1">25〜29</span><span class="bin-chip s2">30〜34</span><span class="bin-chip s3">35〜39</span><span class="bin-chip s4">40〜44</span><span class="bin-chip s4">45〜49</span><span class="bin-chip s5">50〜54</span><span class="bin-chip s5">55〜59</span><span class="bin-chip s5">60+</span>
+  </div>
+</div>
+
+<div class="notes-card">
+  <div class="card-title">分析コメント</div>
+  <div class="note-list">
+
+    <div class="note-item">
+      <div class="note-icon warn">🌙</div>
+      <div class="note-body">
+        <div class="note-title">深夜帯（0〜5時）に 14 台が通過</div>
+        <div class="note-text">
+          0時台 6台・1時台 3台・2時台 3台・5時台 2台と、深夜から早朝にかけてまとまった通行があります。
+          全台数の約 <b>16%</b> にあたり、日中の業務交通とは性質の異なる車両群と考えられます。
+          速度は 30 km/h 前後と抑え気味で、速度超過の懸念は低いものの、<b>深夜帯の常時通行</b>として記録に留めておく価値があります。
+        </div>
+      </div>
+    </div>
+
+    <hr class="note-divider">
+
+    <div class="note-item">
+      <div class="note-icon alert">⚠️</div>
+      <div class="note-body">
+        <div class="note-title">14 時台に 50 km/h — この日唯一の最高速</div>
+        <div class="note-text">
+          14時台は 6 台しか通行していない閑散時間帯ですが、その中の 1 台が <b>50 km/h</b> を記録しました。
+          他の時間帯の最高値は 41〜42 km/h 以下であり、この 1 台だけが突出しています。
+          交通量が少ない時間帯に速度が上がりやすい傾向の表れとも読み取れます。
+        </div>
+      </div>
+    </div>
+
+    <hr class="note-divider">
+
+    <div class="note-item">
+      <div class="note-icon alert">🐢</div>
+      <div class="note-body">
+        <div class="note-title">15〜16 時台の平均速度が急落（16 km/h・22 km/h）</div>
+        <div class="note-text">
+          15時台の平均は <b>16.0 km/h</b>（最低 11 km/h）、16時台は <b>22.8 km/h</b> と、この日の他の時間帯と比べて突出して低速です。
+          台数も少なく（2台・4台）、<b>大型車のゆっくり通過・切り返し・駐停車</b>など特定の車両行動が平均を引き下げている可能性があります。
+          該当ファイルを個別確認することをお勧めします。
+        </div>
+      </div>
+    </div>
+
+    <hr class="note-divider">
+
+    <div class="note-item">
+      <div class="note-icon info">📊</div>
+      <div class="note-body">
+        <div class="note-title">全体的に「おだやかな金曜」— 平均 28.8 km/h</div>
+        <div class="note-text">
+          9月の平均（9〜12時台）が <b>31〜32 km/h</b> であるのに対し、この日は <b>28.8 km/h</b> と低め。
+          30 km/h 未満が全体の約 <b>48%</b> を占め、40 km/h 超はわずか 7 台（8%）でした。
+          9月の他の日と比べると速度超過車両が少なく、交通としては落ち着いた一日でした。
+        </div>
+      </div>
+    </div>
+
+    <hr class="note-divider">
+
+    <div class="note-item">
+      <div class="note-icon check">✅</div>
+      <div class="note-body">
+        <div class="note-title">ピークは 9・10・12 時台（各 10 台）が並立</div>
+        <div class="note-text">
+          通過台数の多い時間帯は午前中に集中しており、9時・10時・12時台がそれぞれ <b>10 台</b> で並んでいます。
+          午後（13時以降）は急激に台数が減少し、17時台に再び 6 台の小ピークが見られます。
+          朝〜昼にかけての通行パターンが主体の日といえます。
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<script>
+const DATA = [6,3,3,0,0,2,3,0,4,10,10,7,10,4,6,2,4,6,4,2,4,0,0,0];
+const MAX  = Math.max(...DATA);
+const wrap = document.getElementById('barChart');
+DATA.forEach((v, i) => {
+  const col = document.createElement('div');
+  col.className = 'bar-col';
+  const pct = MAX > 0 ? (v / MAX * 100) : 0;
+  col.innerHTML =
+    `<div class="bar-n">${v > 0 ? v : ''}</div>` +
+    `<div class="bar${v===0?' empty':''}" style="height:${pct}%"></div>` +
+    `<div class="bar-lbl">${String(i).padStart(2,'0')}時</div>`;
+  wrap.appendChild(col);
+});
+
+function toggleTheme() {
+  const r = document.documentElement;
+  const dk = r.dataset.theme==='dark' || (r.dataset.theme==='' && window.matchMedia('(prefers-color-scheme:dark)').matches);
+  r.dataset.theme = dk ? 'light' : 'dark';
+}
+</script>
+<script>
+const LABELS = ["00\u6642", "01\u6642", "02\u6642", "03\u6642", "04\u6642", "05\u6642", "06\u6642", "07\u6642", "08\u6642", "09\u6642", "10\u6642", "11\u6642", "12\u6642", "13\u6642", "14\u6642", "15\u6642", "16\u6642", "17\u6642", "18\u6642", "19\u6642", "20\u6642", "21\u6642", "22\u6642", "23\u6642"];
+const DATA   = [6, 3, 3, 0, 0, 2, 3, 0, 4, 10, 10, 7, 10, 4, 6, 2, 4, 6, 4, 2, 4, 0, 0, 0];
+const FRI_C  = '#cc2a18';
+
+function getTextColor() {
+  return getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#1a1d2e';
+}
+function getBorderColor() {
+  return getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#e4e7f0';
+}
+
+let chart;
+function buildChart() {
+  const ctx = document.getElementById('barChart').getContext('2d');
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: LABELS,
+      datasets: [{
+        label: '台数',
+        data: DATA,
+        backgroundColor: DATA.map(v => v > 0 ? FRI_C + 'cc' : 'transparent'),
+        borderColor:      DATA.map(v => v > 0 ? FRI_C : 'transparent'),
+        borderWidth: 1,
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          ticks: { font: { size: 10 }, color: getTextColor(), maxRotation: 0 },
+          grid: { color: getBorderColor() }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { font: { size: 11 }, color: getTextColor(), stepSize: 2 },
+          grid: { color: getBorderColor() }
+        }
+      }
+    }
+  });
+}
+buildChart();
+
+function toggleTheme() {
+  const r = document.documentElement;
+  const dk = r.dataset.theme==='dark' || (r.dataset.theme==='' && window.matchMedia('(prefers-color-scheme:dark)').matches);
+  r.dataset.theme = dk ? 'light' : 'dark';
+  setTimeout(buildChart, 50);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>9/4 · 9/11 · 9/18 金曜3日比較ヒートマップ</title>
+<style>
+:root{
+  --bg:#f2f4f8;--bg-s:#ffffff;--text:#1a1d2e;--text-sub:#5a5f7a;--text-mute:#9098b5;
+  --border:#e4e7f0;--border-lt:#eeeff6;--shadow:0 2px 12px rgba(60,70,120,.08);--r:12px;
+  --fri:#cc2a18;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#111520;--bg-s:#1a1e2c;--text:#dde2f0;--text-sub:#8a96b4;--text-mute:#5a647e;
+        --border:#252d44;--border-lt:#1f2640;--shadow:0 2px 12px rgba(0,0,0,.3);}
+}
+:root[data-theme=dark]{--bg:#111520;--bg-s:#1a1e2c;--text:#dde2f0;--text-sub:#8a96b4;--text-mute:#5a647e;--border:#252d44;--border-lt:#1f2640;}
+:root[data-theme=light]{--bg:#f2f4f8;--bg-s:#ffffff;--text:#1a1d2e;--text-sub:#5a5f7a;--text-mute:#9098b5;--border:#e4e7f0;--border-lt:#eeeff6;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Hiragino Sans','Yu Gothic UI',sans-serif;font-size:14px;}
+.page{max-width:860px;margin:0 auto;padding:24px 20px 60px;display:flex;flex-direction:column;gap:20px;}
+.bc{font-size:11px;color:var(--text-mute);}
+.title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+h1{font-size:21px;font-weight:700;letter-spacing:-.02em;}
+.tag{display:inline-block;background:var(--fri);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;margin-left:8px;vertical-align:middle;}
+.meta{font-size:11px;color:var(--text-mute);margin-top:4px;}
+.btn{background:var(--bg-s);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;font-family:inherit;color:var(--text-sub);cursor:pointer;white-space:nowrap;}
+.day-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.day-card{background:var(--bg-s);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.day-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--r) var(--r) 0 0;background:var(--fri);}
+.dc-date{font-size:13px;font-weight:700;color:var(--fri);margin-bottom:8px;}
+.dc-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text-sub);padding:2px 0;border-bottom:1px solid var(--border-lt);}
+.dc-row:last-child{border-bottom:none;}
+.dc-val{font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;}
+.dc-note{font-size:10px;color:var(--text-mute);font-weight:400;}
+.card{background:var(--bg-s);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);overflow-x:auto;}
+.card-title{font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;}
+table.hm{border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:100%;font-size:12px;}
+table.hm thead th{font-size:11px;font-weight:700;color:var(--text-mute);padding:4px 8px;border-bottom:2px solid var(--border);text-align:center;min-width:100px;}
+table.hm thead th.th-h{text-align:right;padding-right:8px;min-width:44px;font-weight:400;}
+.dname{font-size:14px;font-weight:700;color:var(--fri);display:block;}
+.ddow{font-size:10px;color:var(--text-mute);}
+table.hm tbody th{text-align:right;padding-right:8px;font-size:10px;font-weight:400;color:var(--text-mute);}
+table.hm tbody td{text-align:center;padding:3px 6px;height:26px;font-size:12px;font-weight:600;border-radius:2px;}
+table.hm tfoot td{text-align:center;font-weight:700;font-size:13px;border-top:2px solid var(--border);padding:5px 6px;}
+table.hm tfoot td.tf-lbl{text-align:right;padding-right:8px;font-size:11px;font-weight:400;color:var(--text-sub);}
+table.hm tfoot td.tf-val{color:var(--fri);}
+.rtot{border-left:1px solid var(--border);font-weight:700;color:var(--text);}
+.leg-row{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--text-sub);margin-top:12px;padding-top:10px;border-top:1px solid var(--border-lt);}
+.leg-item{display:flex;align-items:center;gap:4px;}
+.leg-sw{width:14px;height:14px;border-radius:2px;flex-shrink:0;}
+.no-data-note{font-size:11px;color:var(--text-mute);margin-top:8px;}
+.zone-chart{display:flex;gap:0;height:120px;align-items:flex-end;border-bottom:2px solid var(--border);margin-bottom:8px;padding:0 4px;}
+.zone-group{flex:1;display:flex;gap:3px;align-items:flex-end;justify-content:center;padding:0 4px;border-right:1px dashed var(--border-lt);}
+.zone-group:last-child{border-right:none;}
+.z-bar{width:22px;border-radius:3px 3px 0 0;position:relative;min-height:0;}
+.z-bar.no-meas{background:repeating-linear-gradient(45deg,#ccc,#ccc 2px,transparent 2px,transparent 6px);opacity:.5;}
+.z-bar span{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;white-space:nowrap;}
+.zone-labels{display:flex;gap:0;}
+.zone-lbl{flex:1;text-align:center;font-size:10px;color:var(--text-mute);padding-top:4px;}
+.bar-c0{background:#3d78d0;}.bar-c1{background:#7060c8;}.bar-c2{background:var(--fri);}
+.spd-compare{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.spd-card{background:var(--bg-s);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);}
+.spd-date{font-size:12px;font-weight:700;color:var(--fri);margin-bottom:8px;}
+.spd-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;}
+.spd-lbl{width:52px;color:var(--text-mute);flex-shrink:0;}
+.spd-bar-wrap{flex:1;background:var(--border-lt);border-radius:3px;height:12px;}
+.spd-bar{height:12px;border-radius:3px;}
+.spd-n{width:28px;text-align:right;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;}
+.c-blue{background:#3d78d0;}.c-green{background:#22b894;}
+.c-orange{background:#dc7a10;}.c-red{background:var(--fri);}
+.note-grid{display:flex;flex-direction:column;gap:10px;}
+.note{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--bg);border-radius:8px;border-left:3px solid var(--border);}
+.note.finding{border-left-color:var(--fri);}
+.note.positive{border-left-color:#22b894;}
+.note.caution{border-left-color:#dc7a10;}
+.note.info{border-left-color:#3d78d0;}
+.note-ico{font-size:18px;flex-shrink:0;}
+.note-body .nt{font-size:13px;font-weight:700;margin-bottom:3px;}
+.note-body .nd{font-size:12px;color:var(--text-sub);line-height:1.7;}
+.note-body .nd b{color:var(--text);}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="bc">速度計測システム &rsaquo; 日別詳細レポート &rsaquo; 金曜3日比較</div>
+<div class="title-row">
+  <div>
+    <h1>2026年 9/4 &middot; 9/11 &middot; 9/18 <span class="tag">金曜3日比較</span></h1>
+    <p class="meta">金曜日のみ抽出 ／ line1・line2 除外 ／ 車種区別なし ／ 9/11 深夜帯は計測なし</p>
+  </div>
+  <button class="btn" onclick="toggleTheme()">テーマ切替</button>
+</div>
+
+<div class="day-grid">
+  <div class="day-card">
+    <div class="dc-date">9/4（金）</div>
+    <div class="dc-row"><span>総台数</span><span class="dc-val">90 台</span></div>
+    <div class="dc-row"><span>平均速度</span><span class="dc-val">28.8 km/h</span></div>
+    <div class="dc-row"><span>最高速度</span><span class="dc-val">50 km/h</span></div>
+    <div class="dc-row"><span>ピーク</span><span class="dc-val">12時台 10台</span></div>
+    <div class="dc-row"><span>40km/h超</span><span class="dc-val">7台</span></div>
+    <div class="dc-row"><span>深夜(0〜5時)</span><span class="dc-val">14台</span></div>
+  </div>
+  <div class="day-card">
+    <div class="dc-date">9/11（金）</div>
+    <div class="dc-row"><span>総台数</span><span class="dc-val">68 台</span></div>
+    <div class="dc-row"><span>平均速度</span><span class="dc-val">30.7 km/h</span></div>
+    <div class="dc-row"><span>最高速度</span><span class="dc-val">52 km/h</span></div>
+    <div class="dc-row"><span>ピーク</span><span class="dc-val">12時台 12台</span></div>
+    <div class="dc-row"><span>40km/h超</span><span class="dc-val">9台</span></div>
+    <div class="dc-row"><span>深夜(0〜5時)</span><span class="dc-val dc-note">計測なし</span></div>
+  </div>
+  <div class="day-card">
+    <div class="dc-date">9/18（金）</div>
+    <div class="dc-row"><span>総台数</span><span class="dc-val">86 台</span></div>
+    <div class="dc-row"><span>平均速度</span><span class="dc-val">30.1 km/h</span></div>
+    <div class="dc-row"><span>最高速度</span><span class="dc-val">45 km/h</span></div>
+    <div class="dc-row"><span>ピーク</span><span class="dc-val">10時台 14台</span></div>
+    <div class="dc-row"><span>40km/h超</span><span class="dc-val">8台</span></div>
+    <div class="dc-row"><span>深夜(0〜5時)</span><span class="dc-val">10台</span></div>
+  </div>
+</div>
+
+<div class="card">
+<div class="card-title">時間帯 &times; 日別 台数ヒートマップ</div>
+<table class="hm">
+<thead><tr>
+  <th class="th-h">時刻</th><th><span class="dname">9/4</span><span class="ddow">金曜日</span></th><th><span class="dname">9/11</span><span class="ddow">金曜日</span></th><th><span class="dname">9/18</span><span class="ddow">金曜日</span></th><th style="border-left:1px solid var(--border)">3日計</th></tr></thead><tbody><tr><th>00時</th><td style="background:#FECB7A;color:inherit">6</td><td style="color:#bbb;font-size:10px;">—</td><td style="color:#bbb"></td><td class="rtot">6</td></tr>
+<tr><th>01時</th><td style="background:#FFF0D6;color:inherit">3</td><td style="color:#bbb;font-size:10px;">—</td><td style="background:#FFF0D6;color:inherit">3</td><td class="rtot">6</td></tr>
+<tr><th>02時</th><td style="background:#FFF0D6;color:inherit">3</td><td style="color:#bbb;font-size:10px;">—</td><td style="background:#FECB7A;color:inherit">6</td><td class="rtot">9</td></tr>
+<tr><th>03時</th><td style="color:#bbb"></td><td style="color:#bbb;font-size:10px;">—</td><td style="background:#FFF0D6;color:inherit">1</td><td class="rtot">1</td></tr>
+<tr><th>05時</th><td style="background:#FFF0D6;color:inherit">2</td><td style="color:#bbb;font-size:10px;">—</td><td style="color:#bbb"></td><td class="rtot">2</td></tr>
+<tr><th>06時</th><td style="background:#FFF0D6;color:inherit">3</td><td style="color:#bbb"></td><td style="background:#FFF0D6;color:inherit">3</td><td class="rtot">6</td></tr>
+<tr><th>07時</th><td style="color:#bbb"></td><td style="color:#bbb"></td><td style="background:#FFF0D6;color:inherit">1</td><td class="rtot">1</td></tr>
+<tr><th>08時</th><td style="background:#FECB7A;color:inherit">4</td><td style="background:#FECB7A;color:inherit">8</td><td style="background:#FFF0D6;color:inherit">3</td><td class="rtot">15</td></tr>
+<tr><th>09時</th><td style="background:#FBA337;color:#fff">10</td><td style="background:#FBA337;color:#fff">12</td><td style="background:#FBA337;color:#fff">9</td><td class="rtot">31</td></tr>
+<tr><th>10時</th><td style="background:#FBA337;color:#fff">10</td><td style="background:#FBA337;color:#fff">9</td><td style="background:#E87012;color:#fff">14</td><td class="rtot">33</td></tr>
+<tr><th>11時</th><td style="background:#FECB7A;color:inherit">7</td><td style="background:#FECB7A;color:inherit">5</td><td style="background:#FECB7A;color:inherit">8</td><td class="rtot">20</td></tr>
+<tr><th>12時</th><td style="background:#FBA337;color:#fff">10</td><td style="background:#FBA337;color:#fff">12</td><td style="background:#FECB7A;color:inherit">8</td><td class="rtot">30</td></tr>
+<tr><th>13時</th><td style="background:#FECB7A;color:inherit">4</td><td style="color:#bbb"></td><td style="background:#FECB7A;color:inherit">5</td><td class="rtot">9</td></tr>
+<tr><th>14時</th><td style="background:#FECB7A;color:inherit">6</td><td style="background:#FECB7A;color:inherit">4</td><td style="background:#FECB7A;color:inherit">4</td><td class="rtot">14</td></tr>
+<tr><th>15時</th><td style="background:#FFF0D6;color:inherit">2</td><td style="background:#FFF0D6;color:inherit">1</td><td style="background:#FFF0D6;color:inherit">3</td><td class="rtot">6</td></tr>
+<tr><th>16時</th><td style="background:#FECB7A;color:inherit">4</td><td style="background:#FECB7A;color:inherit">5</td><td style="background:#FECB7A;color:inherit">5</td><td class="rtot">14</td></tr>
+<tr><th>17時</th><td style="background:#FECB7A;color:inherit">6</td><td style="background:#FECB7A;color:inherit">6</td><td style="background:#FECB7A;color:inherit">4</td><td class="rtot">16</td></tr>
+<tr><th>18時</th><td style="background:#FECB7A;color:inherit">4</td><td style="background:#FFF0D6;color:inherit">3</td><td style="background:#FFF0D6;color:inherit">3</td><td class="rtot">10</td></tr>
+<tr><th>19時</th><td style="background:#FFF0D6;color:inherit">2</td><td style="background:#FFF0D6;color:inherit">2</td><td style="background:#FECB7A;color:inherit">4</td><td class="rtot">8</td></tr>
+<tr><th>20時</th><td style="background:#FECB7A;color:inherit">4</td><td style="background:#FFF0D6;color:inherit">1</td><td style="background:#FFF0D6;color:inherit">2</td><td class="rtot">7</td></tr></tbody><tfoot><tr>
+  <td class="tf-lbl">合計</td>
+  <td class="tf-val">90</td><td class="tf-val">68</td><td class="tf-val">86</td>
+  <td class="tf-val">244</td>
+</tr></tfoot>
+</table>
+<div class="leg-row"><span class="leg-item"><span class="leg-sw" style="background:transparent;border:1px solid rgba(0,0,0,.1)"></span>0</span><span class="leg-item"><span class="leg-sw" style="background:#FFF0D6;border:1px solid rgba(0,0,0,.08)"></span>1–3</span><span class="leg-item"><span class="leg-sw" style="background:#FECB7A;border:1px solid rgba(0,0,0,.08)"></span>4–8</span><span class="leg-item"><span class="leg-sw" style="background:#FBA337;border:1px solid rgba(0,0,0,.08)"></span>9–13</span><span class="leg-item"><span class="leg-sw" style="background:#E87012;border:1px solid rgba(0,0,0,.08)"></span>14–18</span><span class="leg-item"><span class="leg-sw" style="background:#C44400;border:1px solid rgba(0,0,0,.08)"></span>19–23</span><span class="leg-item"><span class="leg-sw" style="background:#8C1A00;border:1px solid rgba(0,0,0,.08)"></span>24+</span></div>
+<p class="no-data-note">— は計測なし（9/11 深夜0〜5時台はシステム停止のためデータなし）</p>
+</div>
+<div class="card">
+<div class="card-title">時間帯ゾーン別 台数比較</div>
+<div class="zone-chart"><div class="zone-group"><div class="z-bar bar-c0" style="height:35%"><span style="color:var(--text)">14</span></div><div class="z-bar bar-c1 no-meas" style="height:8%"><span style="color:var(--text)">–</span></div><div class="z-bar bar-c2" style="height:25%"><span style="color:var(--text)">10</span></div></div><div class="zone-group"><div class="z-bar bar-c0" style="height:17%"><span style="color:var(--text)">7</span></div><div class="z-bar bar-c1" style="height:20%"><span style="color:var(--text)">8</span></div><div class="z-bar bar-c2" style="height:17%"><span style="color:var(--text)">7</span></div></div><div class="zone-group"><div class="z-bar bar-c0" style="height:94%"><span style="color:var(--text)">37</span></div><div class="z-bar bar-c1" style="height:97%"><span style="color:var(--text)">38</span></div><div class="z-bar bar-c2" style="height:100%"><span style="color:var(--text)">39</span></div></div><div class="zone-group"><div class="z-bar bar-c0" style="height:66%"><span style="color:var(--text)">26</span></div><div class="z-bar bar-c1" style="height:48%"><span style="color:var(--text)">19</span></div><div class="z-bar bar-c2" style="height:61%"><span style="color:var(--text)">24</span></div></div><div class="zone-group"><div class="z-bar bar-c0" style="height:15%"><span style="color:var(--text)">6</span></div><div class="z-bar bar-c1" style="height:7%"><span style="color:var(--text)">3</span></div><div class="z-bar bar-c2" style="height:15%"><span style="color:var(--text)">6</span></div></div></div><div class="zone-labels"><div class="zone-lbl">深夜</div><div class="zone-lbl">朝</div><div class="zone-lbl">午前</div><div class="zone-lbl">午後</div><div class="zone-lbl">夜</div></div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--text-sub);">
+  <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#3d78d0;margin-right:4px;"></span>9/4</span>
+  <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#7060c8;margin-right:4px;"></span>9/11</span>
+  <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--fri);margin-right:4px;"></span>9/18</span>
+  <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:repeating-linear-gradient(45deg,#aaa,#aaa 2px,transparent 2px,transparent 6px);margin-right:4px;"></span>計測なし</span>
+</div>
+</div>
+<div class="card">
+<div class="card-title">速度帯別 構成比（日別）</div>
+<div class="spd-compare"><div class="spd-card"><div class="spd-date">9/4（金） 90台</div><div class="spd-row"><span class="spd-lbl">〜29km/h</span><div class="spd-bar-wrap"><div class="spd-bar c-blue" style="width:47%"></div></div><span class="spd-n">43</span></div><div class="spd-row"><span class="spd-lbl">30〜39</span><div class="spd-bar-wrap"><div class="spd-bar c-green" style="width:44%"></div></div><span class="spd-n">40</span></div><div class="spd-row"><span class="spd-lbl">40〜49</span><div class="spd-bar-wrap"><div class="spd-bar c-orange" style="width:6%"></div></div><span class="spd-n">6</span></div><div class="spd-row"><span class="spd-lbl">50km/h+</span><div class="spd-bar-wrap"><div class="spd-bar c-red" style="width:1%"></div></div><span class="spd-n">1</span></div></div><div class="spd-card"><div class="spd-date">9/11（金） 68台</div><div class="spd-row"><span class="spd-lbl">〜29km/h</span><div class="spd-bar-wrap"><div class="spd-bar c-blue" style="width:44%"></div></div><span class="spd-n">30</span></div><div class="spd-row"><span class="spd-lbl">30〜39</span><div class="spd-bar-wrap"><div class="spd-bar c-green" style="width:42%"></div></div><span class="spd-n">29</span></div><div class="spd-row"><span class="spd-lbl">40〜49</span><div class="spd-bar-wrap"><div class="spd-bar c-orange" style="width:10%"></div></div><span class="spd-n">7</span></div><div class="spd-row"><span class="spd-lbl">50km/h+</span><div class="spd-bar-wrap"><div class="spd-bar c-red" style="width:2%"></div></div><span class="spd-n">2</span></div></div><div class="spd-card"><div class="spd-date">9/18（金） 86台</div><div class="spd-row"><span class="spd-lbl">〜29km/h</span><div class="spd-bar-wrap"><div class="spd-bar c-blue" style="width:38%"></div></div><span class="spd-n">33</span></div><div class="spd-row"><span class="spd-lbl">30〜39</span><div class="spd-bar-wrap"><div class="spd-bar c-green" style="width:52%"></div></div><span class="spd-n">45</span></div><div class="spd-row"><span class="spd-lbl">40〜49</span><div class="spd-bar-wrap"><div class="spd-bar c-orange" style="width:9%"></div></div><span class="spd-n">8</span></div><div class="spd-row"><span class="spd-lbl">50km/h+</span><div class="spd-bar-wrap"><div class="spd-bar c-red" style="width:0%"></div></div><span class="spd-n">0</span></div></div></div></div>
+<div class="card">
+<div class="card-title">傾向分析・注目ポイント</div>
+<div class="note-grid">
+
+  <div class="note finding">
+    <div class="note-ico">📊</div>
+    <div class="note-body">
+      <div class="nt">午前9〜12時台が3日とも安定した主要通行時間帯</div>
+      <div class="nd">
+        9/4=<b>37台</b>・9/11=<b>38台</b>・9/18=<b>39台</b> と、午前中の通行量は3日ともほぼ同数で推移しています。
+        週を経るごとに微増傾向にあり、午前ピークが固定化されていることが読み取れます。
+        9/18ではピーク時刻が <b>10時台（14台）</b> に早まっており、前2日（12時台ピーク）より1〜2時間シフトしています。
+      </div>
+    </div>
+  </div>
+
+  <div class="note caution">
+    <div class="note-ico">🌙</div>
+    <div class="note-body">
+      <div class="nt">深夜通行（0〜5時）：9/4=14台、9/18=10台 ／ 9/11は計測なし</div>
+      <div class="nd">
+        9/4と9/18は深夜帯にそれぞれ <b>14台・10台</b> の通行が記録されています（定期配送・早朝業務等と推定）。
+        9/11は <b>システム停止のため深夜帯の計測データがなく</b>、比較対象から除外しています。
+        9/4・9/18の2日を見ると、深夜通行は一定数存在しており、常時稼働時の把握が望ましい時間帯です。
+      </div>
+    </div>
+  </div>
+
+  <div class="note positive">
+    <div class="note-ico">✅</div>
+    <div class="note-body">
+      <div class="nt">50km/h超の速度超過車両が減少傾向（9/4=1台・9/11=2台・9/18=0台）</div>
+      <div class="nd">
+        9/11に一時 <b>2台</b>（最高 52km/h）あった50超が、9/18には <b>0台</b> に改善されています。
+        9/18の最高速度は <b>45km/h</b> と3日の中で最も低く、全体的な速度の抑制傾向が見られます。
+        9/4（最高50km/h）→ 9/11（最高52km/h）→ 9/18（最高45km/h）と推移しており、最近週が最も落ち着いた速度水準でした。
+      </div>
+    </div>
+  </div>
+
+  <div class="note info">
+    <div class="note-ico">📈</div>
+    <div class="note-body">
+      <div class="nt">平均速度は9/4が最低、9/11が最高（28.8 → 30.7 → 30.1 km/h）</div>
+      <div class="nd">
+        9/4の平均 <b>28.8 km/h</b> は3日中最も低く、29km/h未満の低速車が全体の <b>48%</b> を占めます。
+        9/11は平均 <b>30.7 km/h</b> と最高水準で、30〜39km/h帯も43%あり比較的スムーズな流れでした。
+        9/18は <b>30〜39km/h帯が52%</b> と最も多く、中速帯に集中した安定した交通状況でした。
+      </div>
+    </div>
+  </div>
+
+  <div class="note caution">
+    <div class="note-ico">⚠️</div>
+    <div class="note-body">
+      <div class="nt">午後13〜18時台は9/11が最少（9/4=26台・9/11=19台・9/18=24台）</div>
+      <div class="nd">
+        9/11は午後の通行が <b>19台</b> と特に少なく、通行が午前中に集中した一日です。
+        9/11の14時台に <b>52km/h</b>（この日の最高速）が記録されており、台数が少ない時間帯ほど速度が上がりやすい傾向が確認できます。
+        9/4・9/18は午後も20台台を維持しており、終日を通じてバランスよく通行が分散しています。
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+function toggleTheme(){{
+  const r=document.documentElement;
+  const dk=r.dataset.theme==='dark'||(r.dataset.theme===''&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+  r.dataset.theme=dk?'light':'dark';
+}}
+</script>
+</div></body></html>
