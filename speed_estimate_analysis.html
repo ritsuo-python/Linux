@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>7・9月 台数予測分析</title>
+<style>
+:root{--bg:#f4f5f8;--bg-s:#fff;--text:#1a1d2e;--text-sub:#5a5f7a;--text-mute:#9098b5;
+  --border:#e4e7f0;--border-lt:#eeeff6;--shadow:0 2px 14px rgba(60,70,120,.09);--r:12px;}
+@media(prefers-color-scheme:dark){:root{--bg:#111520;--bg-s:#1a1e2c;--text:#dde2f0;--text-sub:#8a96b4;--text-mute:#5a647e;--border:#252d44;--border-lt:#1f2640;}}
+:root[data-theme=dark]{--bg:#111520;--bg-s:#1a1e2c;--text:#dde2f0;--text-sub:#8a96b4;--text-mute:#5a647e;--border:#252d44;--border-lt:#1f2640;}
+:root[data-theme=light]{--bg:#f4f5f8;--bg-s:#fff;--text:#1a1d2e;--text-sub:#5a5f7a;--text-mute:#9098b5;--border:#e4e7f0;--border-lt:#eeeff6;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Hiragino Sans','Yu Gothic UI',sans-serif;font-size:14px;}
+.page{max-width:860px;margin:0 auto;padding:24px 18px 60px;display:flex;flex-direction:column;gap:20px;}
+.title-row{display:flex;align-items:flex-start;justify-content:space-between;}
+h1{font-size:20px;font-weight:700;letter-spacing:-.02em;}
+.meta{font-size:11px;color:var(--text-mute);margin-top:4px;}
+.btn{background:var(--bg-s);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;font-family:inherit;color:var(--text-sub);cursor:pointer;}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.kpi{background:var(--bg-s);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0;}
+.kpi:nth-child(1)::before{background:#dc7a10}.kpi:nth-child(2)::before{background:#3d78d0}
+.kpi:nth-child(3)::before{background:#22b894}.kpi:nth-child(4)::before{background:#cc2a18}
+.kpi-lbl{font-size:10px;color:var(--text-mute);letter-spacing:.04em;margin-bottom:4px;}
+.kpi-val{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;}
+.kpi-unit{font-size:12px;color:var(--text-sub);}
+.kpi-sub{font-size:11px;color:var(--text-sub);margin-top:4px;}
+.card{background:var(--bg-s);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);}
+.card-title{font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;}
+.verdict{background:var(--bg);border-radius:8px;padding:14px 16px;border-left:4px solid #22b894;font-size:13px;line-height:1.9;margin-bottom:14px;}
+.verdict b{color:var(--text);}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+table{border-collapse:collapse;width:100%;font-size:12px;font-variant-numeric:tabular-nums;}
+thead th{font-size:10px;color:var(--text-mute);padding:6px 10px;border-bottom:2px solid var(--border);text-align:right;letter-spacing:.04em;white-space:nowrap;}
+thead th:first-child{text-align:left;}
+tbody td{padding:5px 10px;border-bottom:1px solid var(--border-lt);vertical-align:middle;text-align:right;}
+tbody td:first-child{text-align:left;}
+tbody tr:last-child td{border-bottom:none;}
+.hl-row td{background:rgba(34,184,148,.08);font-weight:800;font-size:13px;}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="title-row">
+  <div>
+    <h1>7・9月　通過台数 予測分析</h1>
+    <p class="meta">7月実測データから捕捉率を算出し、9月の全体推定台数を導出</p>
+  </div>
+  <button class="btn" onclick="toggleTheme()">テーマ切替</button>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-lbl">7月 実測合計</div>
+    <div class="kpi-val">1543<span class="kpi-unit"> 台</span></div>
+    <div class="kpi-sub">30稼働日（7/4のみ欠測）</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">7月 80%換算（全体推定）</div>
+    <div class="kpi-val">1,929<span class="kpi-unit"> 台</span></div>
+    <div class="kpi-sub">1,543 ÷ 0.80</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">9月 実測合計</div>
+    <div class="kpi-val">1029<span class="kpi-unit"> 台</span></div>
+    <div class="kpi-sub">80%換算 → 1,286台</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">9月 保守推定</div>
+    <div class="kpi-val">1611<span class="kpi-unit"> 台</span></div>
+    <div class="kpi-sub">平日60台下限・9/25=90台</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="verdict">
+    7月の実測 <b>1543台</b> が全通過台数の <b>80%</b> に相当するとすると、7月の真の通過台数は <b>1,929台</b>。<br>
+    これは現地感覚のユーザー予想 <b>1,800〜1,900台</b> と非常に近い数値で、<b>80%という捕捉率の妥当性を裏付けています。</b><br>
+    9月は実測1,029台なので同じ80%を当てはめると <b>1,286台</b> — これは9月の欠測・深夜未計測が7月より多いためで、補完推定後の <b>1,611〜1,800台</b> が実態に近い値と推定されます。
+  </div>
+
+  <div class="card-title" style="margin-top:4px">捕捉率 感度分析</div>
+  <table>
+    <thead><tr><th>シナリオ</th><th>捕捉率</th><th>7月 全体推定</th><th>9月 推定（実測から）</th><th style="text-align:center">ユーザー予想範囲</th></tr></thead>
+    <tbody>
+      <tr style=""><td>75%捕捉</td><td style="text-align:right">75%</td><td style="text-align:right;font-variant-numeric:tabular-nums">2057</td><td style="text-align:right;font-variant-numeric:tabular-nums">1372</td><td style="text-align:center"></td></tr><tr style="font-weight:800"><td>80%捕捉（基準）</td><td style="text-align:right">80%</td><td style="text-align:right;font-variant-numeric:tabular-nums">1929</td><td style="text-align:right;font-variant-numeric:tabular-nums">1286</td><td style="text-align:center">✅</td></tr><tr style=""><td>85%捕捉</td><td style="text-align:right">85%</td><td style="text-align:right;font-variant-numeric:tabular-nums">1815</td><td style="text-align:right;font-variant-numeric:tabular-nums">1211</td><td style="text-align:center">✅</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:11px;color:var(--text-mute);margin-top:8px">※ 9月推定（実測から）= 9月実測1,029台 ÷ 捕捉率　　✅ = 1,800〜1,950台範囲内</p>
+</div>
+
+<div class="cols">
+  <div class="card" style="overflow-x:auto;">
+    <div class="card-title">7月 日別実測台数</div>
+    <table>
+      <thead><tr><th>日付</th><th>台数</th><th></th></tr></thead>
+      <tbody><tr style=""><td style="color:#7060c8;font-weight:700">7/01（水）</td><td style="text-align:right;font-variant-numeric:tabular-nums">57</td><td></td></tr><tr style=""><td style="color:#dc7a10;font-weight:700">7/02（木）</td><td style="text-align:right;font-variant-numeric:tabular-nums">84</td><td></td></tr><tr style=""><td style="color:#cc2a18;font-weight:700">7/03（金）</td><td style="text-align:right;font-variant-numeric:tabular-nums">92</td><td></td></tr><tr style="background:rgba(150,150,150,.05)"><td style="color:#b050a0;font-weight:700">7/04（土）</td><td style="text-align:right;font-variant-numeric:tabular-nums">—</td><td><span style="font-size:10px;color:#dc7a10">欠測</span></td></tr><tr style="background:rgba(220,122,16,.08)"><td style="color:#7898b4;font-weight:700">7/05（日）</td><td style="text-align:right;font-variant-numeric:tabular-nums">20</td><td><span style="font-size:10px;color:#dc7a10">▲少</span></td></tr><tr style="background:rgba(220,122,16,.08)"><td style="color:#3d78d0;font-weight:700">7/06（月）</td><td style="text-align:right;font-variant-numeric:tabular-nums">24</td><td><span style="font-size:10px;color:#dc7a10">▲少</span></td></tr><tr style=""><td style="color:#22b894;font-weight:700">7/07（火）</td><td style="text-align:right;font-variant-numeric:tabular-nums">38</td><td></td></tr><tr style="background:rgba(220,122,16,.08)"><td style="color:#7060c8;font-weight:700">7/08（水）</td><td style="text-align:right;font-variant-numeric:tabular-nums">27</td><td><span style="font-size:10px;color:#dc7a10">▲少</span></td></tr><tr style=""><td style="color:#dc7a10;font-weight:700">7/09（木）</td><td style="text-align:right;font-variant-numeric:tabular-nums">48</td><td></td></tr><tr style=""><td style="color:#cc2a18;font-weight:700">7/10（金）</td><td style="text-align:right;font-variant-numeric:tabular-nums">75</td><td></td></tr><tr style="background:rgba(220,122,16,.08)"><td style="color:#b050a0;font-weight:700">7/11（土）</td><td style="text-align:right;font-variant-numeric:tabular-nums">27</td><td><span style="font-size:10px;color:#dc7a10">▲少</span></td></tr><tr style="background:rgba(220,122,16,.08)"><td style="color:#7898b4;font-weight:700">7/12（日）</td><td style="text-align:right;font-variant-numeric:tabular-nums">19</td><td><span style="font-size:10px;color:#dc7a10">▲少</span></td></tr><tr style=""><td style="color:#3d78d0;font-weight:700">7/13（月）</td><td style="text-align:right;font-variant-numeric:tabular-nums">53</td><td></td></tr><tr style="background:rgba(220,122,16,.08)"><td style="color:#22b894;font-weight:700">7/14（火）</td><td style="text-align:right;font-variant-numeric:tabular-nums">28</td><td><span style="font-size:10px;color:#dc7a10">▲少</span></td></tr><tr style="background:rgba(220,122,16,.08)"><td style="color:#7060c8;font-weight:700">7/15（水）</td><td style="text-align:right;font-variant-numeric:tabular-nums">5</td><td><span style="font-size:10px;color:#dc7a10">▲少</span></td></tr><tr style=""><td style="color:#dc7a10;font-weight:700">7/16（木）</td><td style="text-align:right;font-variant-numeric:tabular-nums">42</td><td></td></tr><tr style=""><td style="color:#cc2a18;font-weight:700">7/17（金）</td><td style="text-align:right;font-variant-numeric:tabular-nums">80</td><td></td></tr><tr style=""><td style="color:#b050a0;font-weight:700">7/18（土）</td><td style="text-align:right;font-variant-numeric:tabular-nums">53</td><td></td></tr><tr style=""><td style="color:#7898b4;font-weight:700">7/19（日）</td><td style="text-align:right;font-variant-numeric:tabular-nums">50</td><td></td></tr><tr style=""><td style="color:#3d78d0;font-weight:700">7/20（月）</td><td style="text-align:right;font-variant-numeric:tabular-nums">50</td><td></td></tr><tr style=""><td style="color:#22b894;font-weight:700">7/21（火）</td><td style="text-align:right;font-variant-numeric:tabular-nums">37</td><td></td></tr><tr style=""><td style="color:#7060c8;font-weight:700">7/22（水）</td><td style="text-align:right;font-variant-numeric:tabular-nums">63</td><td></td></tr><tr style=""><td style="color:#dc7a10;font-weight:700">7/23（木）</td><td style="text-align:right;font-variant-numeric:tabular-nums">68</td><td></td></tr><tr style=""><td style="color:#cc2a18;font-weight:700">7/24（金）</td><td style="text-align:right;font-variant-numeric:tabular-nums">76</td><td></td></tr><tr style=""><td style="color:#b050a0;font-weight:700">7/25（土）</td><td style="text-align:right;font-variant-numeric:tabular-nums">50</td><td></td></tr><tr style=""><td style="color:#7898b4;font-weight:700">7/26（日）</td><td style="text-align:right;font-variant-numeric:tabular-nums">31</td><td></td></tr><tr style=""><td style="color:#3d78d0;font-weight:700">7/27（月）</td><td style="text-align:right;font-variant-numeric:tabular-nums">73</td><td></td></tr><tr style=""><td style="color:#22b894;font-weight:700">7/28（火）</td><td style="text-align:right;font-variant-numeric:tabular-nums">67</td><td></td></tr><tr style=""><td style="color:#7060c8;font-weight:700">7/29（水）</td><td style="text-align:right;font-variant-numeric:tabular-nums">50</td><td></td></tr><tr style=""><td style="color:#dc7a10;font-weight:700">7/30（木）</td><td style="text-align:right;font-variant-numeric:tabular-nums">75</td><td></td></tr><tr style=""><td style="color:#cc2a18;font-weight:700">7/31（金）</td><td style="text-align:right;font-variant-numeric:tabular-nums">81</td><td></td></tr></tbody>
+    </table>
+    <p style="font-size:10px;color:var(--text-mute);margin-top:8px">▲少 = 30台未満（部分測定の可能性）</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">9月 推定まとめ</div>
+    <table>
+      <thead><tr><th>推定方法</th><th>台数</th></tr></thead>
+      <tbody>
+        <tr><td>9月実測のみ（捕捉分）</td><td>1029</td></tr>
+        <tr><td>実測80%換算</td><td>1,286</td></tr>
+        <tr><td>実測85%換算</td><td>1,211</td></tr>
+        <tr><td>保守推定（60台下限）</td><td>1611</td></tr>
+        <tr class="hl-row"><td>ユーザー予想（下限）</td><td>1,800</td></tr>
+        <tr class="hl-row"><td>ユーザー予想（上限）</td><td>1,900</td></tr>
+        <tr><td>7月実績80%換算</td><td>1,929</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:11px;color:var(--text-mute);margin-top:12px;line-height:1.7">
+      📌 <b>結論：</b>7月の80%換算（1,929台）が9月にも同様に適用できるなら、<b>9月の実態は1,800〜1,900台</b>というユーザー予想は十分合理的です。<br>
+      9月は祝日3日と日曜計4日（計7日・低台数）が含まれるため、7月より若干少なく <b>1,800台前後</b> が最も蓋然性の高い推定値と考えられます。
+    </p>
+  </div>
+</div>
+</div>
+<script>
+function toggleTheme(){
+  const r=document.documentElement;
+  const dk=r.dataset.theme==='dark'||(r.dataset.theme===''&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+  r.dataset.theme=dk?'light':'dark';
+}
+</script>
+</body></html>
