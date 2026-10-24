@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>10/23 時間帯別スピード詳細</title>
+<style>
+:root{
+  --bg:#0f1117;--bg-s:#1a1d27;--bg-c:#23263a;
+  --text:#e8eaf6;--text-sub:#9ca3bf;--text-mute:#5c6280;
+  --border:#2e3155;--border-lt:#3d4168;--r:10px;
+  --under:#3b82f6;  /* 30未満：青 */
+  --over:#f97316;   /* 30以上：オレンジ */
+  --over40:#ef4444; /* 40以上：赤 */
+}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#f5f6fa;--bg-s:#fff;--bg-c:#eef0f8;
+  --text:#1e2035;--text-sub:#4b5071;--text-mute:#8892b0;
+  --border:#c8cde8;--border-lt:#dde0f0;
+}}
+:root[data-theme="light"]{
+  --bg:#f5f6fa;--bg-s:#fff;--bg-c:#eef0f8;
+  --text:#1e2035;--text-sub:#4b5071;--text-mute:#8892b0;
+  --border:#c8cde8;--border-lt:#dde0f0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;padding:20px 16px 40px;max-width:860px;margin:0 auto}
+h1{font-size:19px;font-weight:700;margin-bottom:4px}
+.subtitle{color:var(--text-sub);font-size:13px;margin-bottom:20px}
+.theme-btn{position:fixed;top:14px;right:16px;background:var(--bg-s);border:1px solid var(--border);color:var(--text-sub);padding:5px 12px;border-radius:20px;cursor:pointer;font-size:12px}
+h2{font-size:14px;font-weight:700;margin:22px 0 12px;padding-left:10px;border-left:3px solid var(--under)}
+
+/* KPI */
+.card-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.card{background:var(--bg-s);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;flex:1;min-width:120px;text-align:center}
+.card .lbl{font-size:11px;color:var(--text-mute);margin-bottom:4px}
+.card .val{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.card .sub{font-size:11px;color:var(--text-sub);margin-top:3px}
+.card.under .val{color:var(--under)}
+.card.over  .val{color:var(--over)}
+.card.over40 .val{color:var(--over40)}
+
+/* legend */
+.legend{display:flex;gap:16px;align-items:center;font-size:12px;margin-bottom:16px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:6px}
+.dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+
+/* bar chart */
+.bar-section{background:var(--bg-s);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:20px}
+.row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.row:last-child{margin-bottom:0}
+.hour-lbl{font-size:12px;font-weight:700;color:var(--text-sub);width:38px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.stacked-bar{flex:1;height:28px;border-radius:6px;overflow:hidden;display:flex;background:var(--bg-c)}
+.bar-under{background:var(--under);height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;transition:width .3s}
+.bar-over {background:var(--over); height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;transition:width .3s}
+.bar-over40{background:var(--over40);height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.row-meta{display:flex;gap:8px;align-items:center;min-width:140px;flex-shrink:0}
+.avg-chip{padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.dots-wrap{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
+
+/* speed dot colors */
+.sp-15{background:#1e3a5f}.sp-20{background:#1d4ed8}.sp-25{background:#2563eb}
+.sp-30{background:#059669}.sp-35{background:#d97706}.sp-40{background:#dc2626}.sp-45{background:#991b1b}
+
+/* detail table */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);margin-bottom:20px}
+table{width:100%;border-collapse:collapse;font-size:12px;background:var(--bg-s);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+th{background:var(--bg-c);color:var(--text-sub);padding:8px 10px;text-align:center;font-weight:600}
+td{padding:7px 10px;text-align:center;border-top:1px solid var(--border-lt);font-variant-numeric:tabular-nums}
+tr:hover td{background:color-mix(in srgb,var(--under) 5%,transparent)}
+.pct-bar{display:inline-block;height:8px;border-radius:4px;vertical-align:middle;margin-right:4px}
+/* summary total row */
+.total-row td{font-weight:700;background:var(--bg-c)}
+</style>
+</head>
+<body>
+<button class="theme-btn" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'">テーマ切替</button>
+
+<h1>10/23（金）時間帯別スピード詳細</h1>
+<p class="subtitle">30 km/h を境にした速度分布 ／ 全時間帯・75台</p>
+
+<div class="card-row" id="kpi-row"></div>
+
+<h2>時間帯別 30km/h境界バー（青＝30未満 ／ 橙＝30以上 ／ 赤＝40以上含む）</h2>
+<div class="bar-section" id="bar-section"></div>
+
+<h2>時間帯別 スピード詳細テーブル</h2>
+<div class="tbl-wrap">
+<table>
+<thead>
+<tr>
+  <th>時間帯</th><th>台数</th><th>平均</th><th>最低</th><th>最高</th>
+  <th style="color:var(--under)">30未満</th>
+  <th style="color:var(--over)">30以上</th>
+  <th style="color:var(--over40)">40以上</th>
+  <th>個別速度（●）</th>
+</tr>
+</thead>
+<tbody id="tbl-body"></tbody>
+<tfoot id="tbl-foot"></tfoot>
+</table>
+</div>
+
+<script>
+const HOURS=[
+  {h:3, speeds:[30,30,30]},
+  {h:5, speeds:[40]},
+  {h:6, speeds:[34]},
+  {h:8, speeds:[21,24,25,29,29,30,31,37]},
+  {h:9, speeds:[23,24,26,27,29,31,32,34,38]},
+  {h:10,speeds:[23,27,32,32,32,38,39]},
+  {h:11,speeds:[22,23,26,26,33,38,43]},
+  {h:12,speeds:[21,24,25,27,32,34,37]},
+  {h:13,speeds:[21,24,29,41]},
+  {h:14,speeds:[22,23,24,29]},
+  {h:15,speeds:[15,15,23,32]},
+  {h:16,speeds:[22,26,26,27,34]},
+  {h:17,speeds:[28,30,30,32,42]},
+  {h:18,speeds:[30,30,30,30]},
+  {h:19,speeds:[30,30,30]},
+  {h:20,speeds:[30,30]},
+  {h:21,speeds:[35]},
+];
+
+function avg(arr){return Math.round(arr.reduce((a,b)=>a+b,0)/arr.length*10)/10}
+function dotColor(s){
+  if(s>=40)return'#ef4444';
+  if(s>=35)return'#f97316';
+  if(s>=30)return'#059669';
+  if(s>=25)return'#2563eb';
+  if(s>=20)return'#3b82f6';
+  return'#93c5fd';
+}
+function avgChipStyle(a){
+  if(a>=35)return'background:#7f1d1d;color:#fca5a5';
+  if(a>=30)return'background:#431407;color:#fdba74';
+  return'background:#1e3a8a;color:#93c5fd';
+}
+
+// totals
+let totalN=0,totalUnder=0,totalOver=0,totalOver40=0,allSpeeds=[];
+HOURS.forEach(r=>{
+  totalN+=r.speeds.length;
+  r.speeds.forEach(s=>{
+    allSpeeds.push(s);
+    if(s<30)totalUnder++;
+    else totalOver++;
+    if(s>=40)totalOver40++;
+  });
+});
+const totalAvg=avg(allSpeeds);
+
+// KPI
+document.getElementById('kpi-row').innerHTML=`
+<div class="card"><div class="lbl">総台数</div><div class="val">${totalN}台</div><div class="sub">10/23 全時間帯</div></div>
+<div class="card under"><div class="lbl">30km/h未満</div><div class="val">${totalUnder}台</div><div class="sub">${Math.round(totalUnder/totalN*100)}%</div></div>
+<div class="card over"><div class="lbl">30km/h以上</div><div class="val">${totalOver}台</div><div class="sub">${Math.round(totalOver/totalN*100)}%</div></div>
+<div class="card over40"><div class="lbl">40km/h以上</div><div class="val">${totalOver40}台</div><div class="sub">${Math.round(totalOver40/totalN*100)}%</div></div>
+<div class="card"><div class="lbl">全体平均</div><div class="val">${totalAvg}<span style="font-size:14px"> km/h</span></div><div class="sub">75台平均</div></div>
+`;
+
+// Bar chart
+const maxN=Math.max(...HOURS.map(r=>r.speeds.length));
+const barSec=document.getElementById('bar-section');
+
+// Legend
+barSec.innerHTML=`<div class="legend" style="margin-bottom:14px">
+  <div class="leg"><div class="dot" style="background:var(--under)"></div>30km/h 未満</div>
+  <div class="leg"><div class="dot" style="background:var(--over)"></div>30〜39 km/h</div>
+  <div class="leg"><div class="dot" style="background:var(--over40)"></div>40km/h 以上</div>
+</div>`;
+
+HOURS.forEach(r=>{
+  const n=r.speeds.length;
+  const under=r.speeds.filter(s=>s<30).length;
+  const over30=r.speeds.filter(s=>s>=30&&s<40).length;
+  const over40_n=r.speeds.filter(s=>s>=40).length;
+  const a=avg(r.speeds);
+  const pctTotal=n/maxN*100;
+  const pctUnder=under/n*100;
+  const pctOver30=over30/n*100;
+  const pctOver40=over40_n/n*100;
+
+  const dots=r.speeds.map(s=>`<span title="${s}km/h" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor(s)};margin:1px" ></span>`).join('');
+
+  barSec.innerHTML+=`
+  <div class="row">
+    <div class="hour-lbl">${String(r.h).padStart(2,'0')}時</div>
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+        <div class="stacked-bar" style="max-width:${pctTotal}%;min-width:40px">
+          ${under>0?`<div class="bar-under" style="width:${pctUnder}%">${under>0?under:''}</div>`:''}
+          ${over30>0?`<div class="bar-over" style="width:${pctOver30}%">${over30>0?over30:''}</div>`:''}
+          ${over40_n>0?`<div class="bar-over40" style="width:${pctOver40}%">${over40_n>0?over40_n:''}</div>`:''}
+        </div>
+        <span style="font-size:11px;color:var(--text-mute)">${n}台</span>
+        <span class="avg-chip" style="${avgChipStyle(a)}">${a} km/h</span>
+      </div>
+      <div class="dots-wrap">${dots}</div>
+    </div>
+  </div>`;
+});
+
+// Table
+const tbody=document.getElementById('tbl-body');
+HOURS.forEach(r=>{
+  const n=r.speeds.length;
+  const under=r.speeds.filter(s=>s<30).length;
+  const over30=r.speeds.filter(s=>s>=30&&s<40).length;
+  const over40_n=r.speeds.filter(s=>s>=40).length;
+  const a=avg(r.speeds);
+  const pctU=Math.round(under/n*100);
+  const pctO=Math.round((n-under)/n*100);
+  const dots=r.speeds.map(s=>`<span title="${s}" style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${dotColor(s)};vertical-align:middle;margin:1px"></span>`).join('');
+
+  tbody.innerHTML+=`<tr>
+    <td><strong>${String(r.h).padStart(2,'0')}時台</strong></td>
+    <td>${n}台</td>
+    <td><span class="avg-chip" style="${avgChipStyle(a)};padding:2px 8px;border-radius:12px;font-size:11px">${a}</span></td>
+    <td>${Math.min(...r.speeds)}</td>
+    <td style="color:${Math.max(...r.speeds)>=40?'var(--over40)':Math.max(...r.speeds)>=30?'var(--over)':'var(--under)'};font-weight:700">${Math.max(...r.speeds)}</td>
+    <td><span style="color:var(--under);font-weight:700">${under}</span>${under>0?`<span style="color:var(--text-mute);font-size:10px"> (${pctU}%)</span>`:''}
+      <div style="display:inline-block;width:${Math.round(under/n*40)}px;height:6px;background:var(--under);border-radius:3px;vertical-align:middle;margin-left:4px"></div>
+    </td>
+    <td><span style="color:var(--over);font-weight:700">${over30}</span>${over30>0?`<span style="color:var(--text-mute);font-size:10px"></span>`:''}</td>
+    <td><span style="color:${over40_n>0?'var(--over40)':'var(--text-mute)'};font-weight:${over40_n>0?700:400}">${over40_n||'—'}</span></td>
+    <td>${dots}</td>
+  </tr>`;
+});
+
+// Footer totals
+document.getElementById('tbl-foot').innerHTML=`<tr class="total-row">
+  <td>合計</td>
+  <td>${totalN}台</td>
+  <td><span class="avg-chip" style="${avgChipStyle(totalAvg)};padding:2px 8px;border-radius:12px;font-size:11px">${totalAvg}</span></td>
+  <td>${Math.min(...allSpeeds)}</td>
+  <td style="color:var(--over40)">${Math.max(...allSpeeds)}</td>
+  <td><span style="color:var(--under)">${totalUnder}</span> <span style="color:var(--text-mute);font-size:10px">(${Math.round(totalUnder/totalN*100)}%)</span></td>
+  <td><span style="color:var(--over)">${totalOver-totalOver40}</span></td>
+  <td><span style="color:var(--over40)">${totalOver40}</span></td>
+  <td></td>
+</tr>`;
+</script>
+</body>
+</html>
