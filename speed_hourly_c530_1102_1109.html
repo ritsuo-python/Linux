@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAPO-C530 時間帯別 11/2〜11/9</title>
+<style>
+:root {
+  --bg-page:#f2f4f8; --bg-surface:#ffffff; --bg-row:#f7f8fc;
+  --text-pri:#1b2236; --text-sec:#4e5d7a; --text-mute:#7d8da8;
+  --border:#cdd3e6; --border-lt:#e4e8f2;
+  --shadow:0 1px 4px rgba(27,34,54,.07),0 4px 16px rgba(27,34,54,.05);
+}
+@media (prefers-color-scheme:dark) {
+  :root {
+    --bg-page:#111520; --bg-surface:#1a1e2c; --bg-row:#1e2335;
+    --text-pri:#dde2f0; --text-sec:#8a96b4; --text-mute:#5a647e;
+    --border:#252d44; --border-lt:#1f2640;
+    --shadow:0 1px 4px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  }
+}
+:root[data-theme="dark"] {
+  --bg-page:#111520; --bg-surface:#1a1e2c; --bg-row:#1e2335;
+  --text-pri:#dde2f0; --text-sec:#8a96b4; --text-mute:#5a647e;
+  --border:#252d44; --border-lt:#1f2640;
+  --shadow:0 1px 4px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+}
+:root[data-theme="light"] {
+  --bg-page:#f2f4f8; --bg-surface:#ffffff; --bg-row:#f7f8fc;
+  --text-pri:#1b2236; --text-sec:#4e5d7a; --text-mute:#7d8da8;
+  --border:#cdd3e6; --border-lt:#e4e8f2;
+  --shadow:0 1px 4px rgba(27,34,54,.07),0 4px 16px rgba(27,34,54,.05);
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+body {
+  background:var(--bg-page); color:var(--text-pri);
+  font-family:-apple-system,'Hiragino Sans','Yu Gothic UI','Meiryo',sans-serif;
+  font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.page { max-width:1280px; margin:0 auto; padding:28px 24px 60px; display:flex; flex-direction:column; gap:22px; }
+
+/* breadcrumb */
+.breadcrumb { font-size:11px; color:var(--text-mute); letter-spacing:.03em; }
+.breadcrumb span { color:var(--text-sec); }
+
+/* title block */
+.title-block { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.title-block h1 { font-size:26px; font-weight:700; letter-spacing:-.02em; line-height:1.2; }
+.meta { font-size:11px; color:var(--text-mute); margin-top:5px; line-height:1.8; }
+.btn { background:var(--bg-surface); border:1px solid var(--border); border-radius:6px;
+       padding:6px 14px; font-size:12px; font-family:inherit; color:var(--text-sec); cursor:pointer; }
+
+/* KPI row — 4 cards */
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.kpi-card {
+  background:var(--bg-surface); border:1px solid var(--border-lt);
+  border-radius:10px; padding:20px 22px 18px; box-shadow:var(--shadow);
+  position:relative; overflow:hidden;
+}
+.kpi-card::before {
+  content:''; position:absolute; top:0; left:0; right:0;
+  height:4px; border-radius:10px 10px 0 0;
+}
+.kpi-card:nth-child(1)::before { background:#3d78d0; }
+.kpi-card:nth-child(2)::before { background:#dc7a10; }
+.kpi-card:nth-child(3)::before { background:#cc2a18; }
+.kpi-card:nth-child(4)::before { background:#22b894; }
+.kpi-lbl { font-size:11px; color:var(--text-mute); letter-spacing:.04em; text-transform:uppercase; margin-bottom:6px; }
+.kpi-val { font-size:32px; font-weight:700; font-variant-numeric:tabular-nums;
+           font-family:'SF Mono','Courier New',monospace; line-height:1.1; letter-spacing:-.02em; }
+.kpi-unit { font-size:16px; font-weight:400; color:var(--text-sec); }
+.kpi-sub { font-size:12px; color:var(--text-sec); margin-top:6px; }
+
+/* weekday max section */
+.wmax-panel {
+  background:var(--bg-surface); border:1px solid var(--border-lt);
+  border-radius:10px; padding:20px 22px; box-shadow:var(--shadow);
+}
+.panel-title {
+  font-size:12px; font-weight:700; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-sec); margin-bottom:14px;
+}
+.wmax-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; }
+.wmax-card {
+  background:var(--bg-row); border:1px solid var(--border-lt);
+  border-radius:8px; padding:14px 10px 12px; text-align:center;
+  position:relative; overflow:hidden;
+}
+.wmax-top { height:3px; position:absolute; top:0; left:0; right:0; border-radius:8px 8px 0 0; }
+.wmax-dow { font-size:11px; font-weight:700; margin-bottom:5px; }
+.wmax-date { font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; }
+.wmax-cnt { font-size:11px; color:var(--text-sec); margin-top:4px; }
+.wmax-star { font-size:10px; color:gold; }
+
+/* heatmap panel */
+.hm-panel {
+  background:var(--bg-surface); border:1px solid var(--border-lt);
+  border-radius:10px; padding:20px 22px 18px; box-shadow:var(--shadow); overflow-x:auto;
+}
+.hm-subtitle { font-size:12px; color:var(--text-sec); margin-bottom:16px; }
+
+table.hm {
+  border-collapse:collapse;
+  font-size:11px; font-variant-numeric:tabular-nums;
+  font-family:'SF Mono','Courier New',monospace;
+  min-width:100%;
+}
+table.hm th, table.hm td { padding:2px 4px; }
+
+/* column headers */
+table.hm thead th {
+  text-align:center; font-size:10px; font-weight:700;
+  color:var(--text-mute); border-bottom:1px solid var(--border);
+  min-width:26px; white-space:nowrap;
+}
+table.hm thead th.th-hour { text-align:right; padding-right:8px; min-width:36px; }
+
+.dn { font-size:11px; font-weight:700; display:block; }
+.dw { font-size:9px; color:var(--text-mute); display:block; }
+.mx { color:gold; font-size:8px; display:block; }
+
+/* weekday colors */
+.wed .dn, .wed .dw { color:#7060c8; }
+.thu .dn, .thu .dw { color:#dc7a10; }
+.fri .dn, .fri .dw { color:#cc2a18; }
+.sat .dn, .sat .dw { color:#b050a0; }
+.sun .dn, .sun .dw { color:#7898b4; }
+.mon .dn, .mon .dw { color:#3d78d0; }
+.tue .dn, .tue .dw { color:#22b894; }
+.missing .dn, .missing .dw { color:var(--text-mute) !important; opacity:0.4; }
+
+/* row headers */
+table.hm tbody th {
+  text-align:right; padding-right:8px;
+  color:var(--text-mute); font-size:10px; font-weight:400; white-space:nowrap;
+}
+/* cells */
+table.hm tbody td {
+  text-align:center; height:22px; min-width:26px;
+  border-radius:2px; font-size:10px; font-weight:600;
+  color:rgba(0,0,0,0.75);
+}
+:root[data-theme="dark"] table.hm tbody td,
+@media (prefers-color-scheme:dark) { table.hm tbody td { color:rgba(255,255,255,0.85); } }
+table.hm tbody td.zero { color:var(--border); }
+table.hm tbody td.missing-cell { background:var(--bg-row) !important; color:var(--border-lt); }
+
+/* footer row */
+table.hm tfoot td {
+  text-align:center; font-weight:700; font-size:11px;
+  color:var(--text-pri); border-top:2px solid var(--border);
+  padding-top:4px;
+}
+table.hm tfoot td.th-hour { text-align:right; padding-right:8px; color:var(--text-sec); font-weight:400; }
+table.hm tfoot td.total-sum { color:#3d78d0; }
+
+/* legend */
+.legend-row {
+  display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  font-size:11px; color:var(--text-sec); margin-top:14px; padding-top:12px;
+  border-top:1px solid var(--border-lt);
+}
+.leg-item { display:flex; align-items:center; gap:4px; }
+.leg-swatch { width:14px; height:14px; border-radius:2px; border:1px solid rgba(0,0,0,.08); flex-shrink:0; }
+.legend-sep { color:var(--border); margin:0 4px; }
+
+.footer-note { font-size:11px; color:var(--text-mute); line-height:1.8; }
+.footer-note strong { color:var(--text-sec); }
+
+@media (max-width:800px) {
+  .kpi-row { grid-template-columns:1fr 1fr; }
+  .wmax-grid { grid-template-columns:repeat(4,1fr); }
+  .kpi-val { font-size:24px; }
+}
+@media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+</style>
+<style>
+.card{background:var(--bg-surface);border:1px solid var(--border-lt);border-radius:10px;padding:20px 22px;box-shadow:var(--shadow)}
+.chart{display:flex;align-items:flex-end;gap:4px;height:180px;padding-top:18px}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px}
+.col .b{width:100%;border-radius:3px 3px 0 0;min-height:2px}
+.col .n{font-size:10px;color:var(--text-sec);font-variant-numeric:tabular-nums}
+.axis{display:flex;gap:4px;margin-top:4px;border-top:1px solid var(--border)}
+.axis span{flex:1;text-align:center;font-size:10px;color:var(--text-mute);padding-top:3px}
+.bandleg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text-sec);margin-top:12px}
+.bandleg i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:4px}
+.bgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.bcard{background:var(--bg-row);border:1px solid var(--border-lt);border-radius:8px;padding:12px;position:relative;overflow:hidden}
+.bcard .t{position:absolute;top:0;left:0;right:0;height:3px}
+.bcard .nm{font-size:12px;font-weight:700}
+.bcard .rg{font-size:10px;color:var(--text-mute)}
+.bcard .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:4px}
+.bcard .v small{font-size:11px;font-weight:400;color:var(--text-sec)}
+.bcard .s{font-size:11px;color:var(--text-sec)}
+.tw{overflow-x:auto}
+table.hr{border-collapse:collapse;width:100%;font-size:12px;font-variant-numeric:tabular-nums}
+table.hr th,table.hr td{padding:5px 8px;border-bottom:1px solid var(--border-lt);text-align:right;white-space:nowrap}
+table.hr thead th{font-size:11px;color:var(--text-mute);border-bottom:1px solid var(--border);text-align:center}
+table.hr td.h{text-align:left;font-weight:700}
+table.hr tr.sep td{border-top:2px solid var(--border)}
+table.hr tr.pk{background:color-mix(in srgb,#dc7a10 10%,transparent)}
+.chip{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;margin:1px 2px 1px 0}
+.mini{display:inline-block;height:10px;border-radius:2px;vertical-align:middle}
+td.l{text-align:left!important}
+.ins li{margin:0 0 8px 18px;font-size:13px;line-height:1.7}
+@media(max-width:800px){.bgrid{grid-template-columns:repeat(3,1fr)}}
+</style></head><body>
+<div class="page">
+<div class="breadcrumb">速度計測システム <span>/</span> TAPO-C530 <span>/</span> 時間帯別レポート</div>
+<div class="title-block"><div>
+<h1>2026年11月2日〜9日 — 時間帯別 通過台数・速度</h1>
+<p class="meta">期間: 11/2 (月) 〜 11/9 (月) の8日間　／　カメラ: TAPO-C530　／　データ: /Users/fujiiritsuo/track-photo/tapo-c530　／　生成: 2026-11-10</p>
+</div><button class="btn" onclick="toggleTheme()">テーマ切替</button></div>
+<div class="kpi-row">
+<div class="kpi-card"><div class="kpi-lbl">総台数</div><div class="kpi-val">577<span class="kpi-unit">台</span></div><div class="kpi-sub">1日平均 72.1台</div></div>
+<div class="kpi-card"><div class="kpi-lbl">ピーク時間帯</div><div class="kpi-val">12<span class="kpi-unit">時台</span></div><div class="kpi-sub">8日計 54台（1日平均 6.8台）</div></div>
+<div class="kpi-card"><div class="kpi-lbl">平均速度</div><div class="kpi-val">28.3<span class="kpi-unit">km/h</span></div><div class="kpi-sub">40km/h以上 42台</div></div>
+<div class="kpi-card"><div class="kpi-lbl">最も速い時間帯</div><div class="kpi-val">9<span class="kpi-unit">時台</span></div><div class="kpi-sub">平均 32.4 km/h（10台以上の時間帯）</div></div>
+</div>
+<div class="card"><div class="panel-title">時間帯別 通過台数（8日間の合計）</div><div class="chart"><div class="col" title="0時台: 30台"><span class="n">30</span><div class="b" style="height:56%;background:#7060c8"></div></div><div class="col" title="1時台: 34台"><span class="n">34</span><div class="b" style="height:63%;background:#7060c8"></div></div><div class="col" title="2時台: 27台"><span class="n">27</span><div class="b" style="height:50%;background:#7060c8"></div></div><div class="col" title="3時台: 9台"><span class="n">9</span><div class="b" style="height:17%;background:#7060c8"></div></div><div class="col" title="4時台: 11台"><span class="n">11</span><div class="b" style="height:20%;background:#7060c8"></div></div><div class="col" title="5時台: 22台"><span class="n">22</span><div class="b" style="height:41%;background:#7060c8"></div></div><div class="col" title="6時台: 9台"><span class="n">9</span><div class="b" style="height:17%;background:#7898b4"></div></div><div class="col" title="7時台: 6台"><span class="n">6</span><div class="b" style="height:11%;background:#7898b4"></div></div><div class="col" title="8時台: 39台"><span class="n">39</span><div class="b" style="height:72%;background:#3d78d0"></div></div><div class="col" title="9時台: 52台"><span class="n">52</span><div class="b" style="height:96%;background:#3d78d0"></div></div><div class="col" title="10時台: 49台"><span class="n">49</span><div class="b" style="height:91%;background:#3d78d0"></div></div><div class="col" title="11時台: 47台"><span class="n">47</span><div class="b" style="height:87%;background:#3d78d0"></div></div><div class="col" title="12時台: 54台"><span class="n">54</span><div class="b" style="height:100%;background:#22b894"></div></div><div class="col" title="13時台: 25台"><span class="n">25</span><div class="b" style="height:46%;background:#22b894"></div></div><div class="col" title="14時台: 23台"><span class="n">23</span><div class="b" style="height:43%;background:#dc7a10"></div></div><div class="col" title="15時台: 12台"><span class="n">12</span><div class="b" style="height:22%;background:#dc7a10"></div></div><div class="col" title="16時台: 32台"><span class="n">32</span><div class="b" style="height:59%;background:#dc7a10"></div></div><div class="col" title="17時台: 39台"><span class="n">39</span><div class="b" style="height:72%;background:#dc7a10"></div></div><div class="col" title="18時台: 15台"><span class="n">15</span><div class="b" style="height:28%;background:#b050a0"></div></div><div class="col" title="19時台: 18台"><span class="n">18</span><div class="b" style="height:33%;background:#b050a0"></div></div><div class="col" title="20時台: 15台"><span class="n">15</span><div class="b" style="height:28%;background:#b050a0"></div></div><div class="col" title="21時台: 2台"><span class="n">2</span><div class="b" style="height:4%;background:#b050a0"></div></div><div class="col" title="22時台: 5台"><span class="n">5</span><div class="b" style="height:9%;background:#b050a0"></div></div><div class="col" title="23時台: 2台"><span class="n">2</span><div class="b" style="height:4%;background:#b050a0"></div></div></div><div class="axis"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span></div><div class="bandleg"><span><i style="background:#7060c8"></i>深夜（0〜5時）</span><span><i style="background:#7898b4"></i>早朝（6〜7時）</span><span><i style="background:#3d78d0"></i>午前（8〜11時）</span><span><i style="background:#22b894"></i>昼（12〜13時）</span><span><i style="background:#dc7a10"></i>午後（14〜17時）</span><span><i style="background:#b050a0"></i>夜（18〜23時）</span></div></div>
+<div class="card"><div class="panel-title">時間帯区分ごとのまとめ</div><div class="bgrid"><div class="bcard"><div class="t" style="background:#7060c8"></div><div class="nm" style="color:#7060c8">深夜</div><div class="rg">0〜5時</div><div class="v">133<small>台</small></div><div class="s">全体の 23% ／ 1日 16.6台</div><div class="s">平均 28.6 km/h</div></div><div class="bcard"><div class="t" style="background:#7898b4"></div><div class="nm" style="color:#7898b4">早朝</div><div class="rg">6〜7時</div><div class="v">15<small>台</small></div><div class="s">全体の 3% ／ 1日 1.9台</div><div class="s">平均 26.5 km/h</div></div><div class="bcard"><div class="t" style="background:#3d78d0"></div><div class="nm" style="color:#3d78d0">午前</div><div class="rg">8〜11時</div><div class="v">187<small>台</small></div><div class="s">全体の 32% ／ 1日 23.4台</div><div class="s">平均 30.9 km/h</div></div><div class="bcard"><div class="t" style="background:#22b894"></div><div class="nm" style="color:#22b894">昼</div><div class="rg">12〜13時</div><div class="v">79<small>台</small></div><div class="s">全体の 14% ／ 1日 9.9台</div><div class="s">平均 26.7 km/h</div></div><div class="bcard"><div class="t" style="background:#dc7a10"></div><div class="nm" style="color:#dc7a10">午後</div><div class="rg">14〜17時</div><div class="v">106<small>台</small></div><div class="s">全体の 18% ／ 1日 13.2台</div><div class="s">平均 25.3 km/h</div></div><div class="bcard"><div class="t" style="background:#b050a0"></div><div class="nm" style="color:#b050a0">夜</div><div class="rg">18〜23時</div><div class="v">57<small>台</small></div><div class="s">全体の 10% ／ 1日 7.1台</div><div class="s">平均 26.8 km/h</div></div></div></div>
+<div class="card"><div class="panel-title">時間帯別 詳細リスト</div><div class="tw"><table class="hr"><thead><tr><th style="text-align:left">時間帯</th><th>区分</th><th>台数<br>(8日計)</th><th>1日平均</th><th style="text-align:left">台数</th><th>平均速度</th><th>最低</th><th>最高</th><th>40km/h<br>以上</th><th style="text-align:left">速度帯内訳（5km/h刻み）</th></tr></thead><tbody>
+<tr class=""><td class="h">00時台</td><td style="color:#7060c8;text-align:center">深夜</td><td><b>30</b></td><td>3.8</td><td class="l"><span class="mini" style="width:50px;background:#7060c8"></span></td><td>31.0</td><td>13.6</td><td>78.4</td><td>5</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">10〜14×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×3</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×8</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×5</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×5</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×3</span><span class="chip" style="background:#fef9c3;color:#92400e">40〜44×2</span><span class="chip" style="background:#fef9c3;color:#92400e">45〜49×1</span><span class="chip" style="background:#fee2e2;color:#991b1b">50〜54×1</span><span class="chip" style="background:#fce7f3;color:#831843">60+×1</span></td></tr>
+<tr class=""><td class="h">01時台</td><td style="color:#7060c8;text-align:center">深夜</td><td><b>34</b></td><td>4.2</td><td class="l"><span class="mini" style="width:57px;background:#7060c8"></span></td><td>28.2</td><td>6.9</td><td>39.7</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">5〜9×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×10</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×7</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×10</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×5</span></td></tr>
+<tr class=""><td class="h">02時台</td><td style="color:#7060c8;text-align:center">深夜</td><td><b>27</b></td><td>3.4</td><td class="l"><span class="mini" style="width:45px;background:#7060c8"></span></td><td>25.8</td><td>3.7</td><td>36.8</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">0〜4×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×11</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×5</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×8</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×1</span></td></tr>
+<tr class=""><td class="h">03時台</td><td style="color:#7060c8;text-align:center">深夜</td><td><b>9</b></td><td>1.1</td><td class="l"><span class="mini" style="width:15px;background:#7060c8"></span></td><td>30.3</td><td>16.3</td><td>40.1</td><td>1</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×2</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×2</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×2</span><span class="chip" style="background:#fef9c3;color:#92400e">40〜44×1</span></td></tr>
+<tr class=""><td class="h">04時台</td><td style="color:#7060c8;text-align:center">深夜</td><td><b>11</b></td><td>1.4</td><td class="l"><span class="mini" style="width:18px;background:#7060c8"></span></td><td>29.1</td><td>12.2</td><td>36.6</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">10〜14×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×3</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×2</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×4</span></td></tr>
+<tr class=""><td class="h">05時台</td><td style="color:#7060c8;text-align:center">深夜</td><td><b>22</b></td><td>2.8</td><td class="l"><span class="mini" style="width:37px;background:#7060c8"></span></td><td>28.3</td><td>13.9</td><td>41.5</td><td>2</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">10〜14×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×2</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×7</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×2</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×6</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×2</span><span class="chip" style="background:#fef9c3;color:#92400e">40〜44×2</span></td></tr>
+<tr class="sep"><td class="h">06時台</td><td style="color:#7898b4;text-align:center">早朝</td><td><b>9</b></td><td>1.1</td><td class="l"><span class="mini" style="width:15px;background:#7898b4"></span></td><td>26.1</td><td>17.4</td><td>37.1</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×2</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×4</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×1</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×1</span></td></tr>
+<tr class=""><td class="h">07時台</td><td style="color:#7898b4;text-align:center">早朝</td><td><b>6</b></td><td>0.8</td><td class="l"><span class="mini" style="width:10px;background:#7898b4"></span></td><td>27.1</td><td>20.1</td><td>38.8</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×3</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×1</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×1</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×1</span></td></tr>
+<tr class="sep"><td class="h">08時台</td><td style="color:#3d78d0;text-align:center">午前</td><td><b>39</b></td><td>4.9</td><td class="l"><span class="mini" style="width:65px;background:#3d78d0"></span></td><td>31.5</td><td>14.1</td><td>56.6</td><td>8</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">10〜14×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×5</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×2</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×13</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×7</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×3</span><span class="chip" style="background:#fef9c3;color:#92400e">40〜44×3</span><span class="chip" style="background:#fef9c3;color:#92400e">45〜49×1</span><span class="chip" style="background:#fee2e2;color:#991b1b">50〜54×3</span><span class="chip" style="background:#fee2e2;color:#991b1b">55〜59×1</span></td></tr>
+<tr class=""><td class="h">09時台</td><td style="color:#3d78d0;text-align:center">午前</td><td><b>52</b></td><td>6.5</td><td class="l"><span class="mini" style="width:87px;background:#3d78d0"></span></td><td>32.4</td><td>19.9</td><td>46.3</td><td>9</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×7</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×13</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×14</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×8</span><span class="chip" style="background:#fef9c3;color:#92400e">40〜44×8</span><span class="chip" style="background:#fef9c3;color:#92400e">45〜49×1</span></td></tr>
+<tr class=""><td class="h">10時台</td><td style="color:#3d78d0;text-align:center">午前</td><td><b>49</b></td><td>6.1</td><td class="l"><span class="mini" style="width:82px;background:#3d78d0"></span></td><td>30.7</td><td>4.0</td><td>86.1</td><td>5</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">0〜4×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×8</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×19</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×7</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×8</span><span class="chip" style="background:#fef9c3;color:#92400e">40〜44×4</span><span class="chip" style="background:#fce7f3;color:#831843">60+×1</span></td></tr>
+<tr class=""><td class="h">11時台</td><td style="color:#3d78d0;text-align:center">午前</td><td><b>47</b></td><td>5.9</td><td class="l"><span class="mini" style="width:78px;background:#3d78d0"></span></td><td>28.9</td><td>12.8</td><td>47.6</td><td>6</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">10〜14×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×5</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×12</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×9</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×9</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×5</span><span class="chip" style="background:#fef9c3;color:#92400e">40〜44×5</span><span class="chip" style="background:#fef9c3;color:#92400e">45〜49×1</span></td></tr>
+<tr class="sep pk"><td class="h">12時台</td><td style="color:#22b894;text-align:center">昼</td><td><b>54</b></td><td>6.8</td><td class="l"><span class="mini" style="width:90px;background:#22b894"></span></td><td>26.5</td><td>10.1</td><td>52.0</td><td>1</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">10〜14×2</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×5</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×17</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×15</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×8</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×6</span><span class="chip" style="background:#fee2e2;color:#991b1b">50〜54×1</span></td></tr>
+<tr class=""><td class="h">13時台</td><td style="color:#22b894;text-align:center">昼</td><td><b>25</b></td><td>3.1</td><td class="l"><span class="mini" style="width:42px;background:#22b894"></span></td><td>27.2</td><td>16.8</td><td>38.1</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×4</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×7</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×4</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×6</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×4</span></td></tr>
+<tr class="sep"><td class="h">14時台</td><td style="color:#dc7a10;text-align:center">午後</td><td><b>23</b></td><td>2.9</td><td class="l"><span class="mini" style="width:38px;background:#dc7a10"></span></td><td>22.8</td><td>15.4</td><td>31.2</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×7</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×9</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×6</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×1</span></td></tr>
+<tr class=""><td class="h">15時台</td><td style="color:#dc7a10;text-align:center">午後</td><td><b>12</b></td><td>1.5</td><td class="l"><span class="mini" style="width:20px;background:#dc7a10"></span></td><td>26.7</td><td>18.8</td><td>40.3</td><td>1</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×1</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×4</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×4</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×1</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×1</span><span class="chip" style="background:#fef9c3;color:#92400e">40〜44×1</span></td></tr>
+<tr class=""><td class="h">16時台</td><td style="color:#dc7a10;text-align:center">午後</td><td><b>32</b></td><td>4.0</td><td class="l"><span class="mini" style="width:53px;background:#dc7a10"></span></td><td>26.0</td><td>15.8</td><td>48.2</td><td>1</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×7</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×8</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×10</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×4</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×2</span><span class="chip" style="background:#fef9c3;color:#92400e">45〜49×1</span></td></tr>
+<tr class=""><td class="h">17時台</td><td style="color:#dc7a10;text-align:center">午後</td><td><b>39</b></td><td>4.9</td><td class="l"><span class="mini" style="width:65px;background:#dc7a10"></span></td><td>25.8</td><td>18.1</td><td>37.1</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×6</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×12</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×14</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×6</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×1</span></td></tr>
+<tr class="sep"><td class="h">18時台</td><td style="color:#b050a0;text-align:center">夜</td><td><b>15</b></td><td>1.9</td><td class="l"><span class="mini" style="width:25px;background:#b050a0"></span></td><td>27.7</td><td>16.1</td><td>51.6</td><td>1</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×2</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×6</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×2</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×3</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×1</span><span class="chip" style="background:#fee2e2;color:#991b1b">50〜54×1</span></td></tr>
+<tr class=""><td class="h">19時台</td><td style="color:#b050a0;text-align:center">夜</td><td><b>18</b></td><td>2.2</td><td class="l"><span class="mini" style="width:30px;background:#b050a0"></span></td><td>24.7</td><td>17.4</td><td>34.0</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×4</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×6</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×5</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×3</span></td></tr>
+<tr class=""><td class="h">20時台</td><td style="color:#b050a0;text-align:center">夜</td><td><b>15</b></td><td>1.9</td><td class="l"><span class="mini" style="width:25px;background:#b050a0"></span></td><td>25.5</td><td>16.6</td><td>38.4</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">15〜19×4</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×3</span><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×7</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×1</span></td></tr>
+<tr class=""><td class="h">21時台</td><td style="color:#b050a0;text-align:center">夜</td><td><b>2</b></td><td>0.2</td><td class="l"><span class="mini" style="width:3px;background:#b050a0"></span></td><td>28.1</td><td>26.7</td><td>29.6</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×2</span></td></tr>
+<tr class=""><td class="h">22時台</td><td style="color:#b050a0;text-align:center">夜</td><td><b>5</b></td><td>0.6</td><td class="l"><span class="mini" style="width:8px;background:#b050a0"></span></td><td>35.3</td><td>27.2</td><td>41.8</td><td>2</td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">25〜29×2</span><span class="chip" style="background:#dcfce7;color:#15803d">35〜39×1</span><span class="chip" style="background:#fef9c3;color:#92400e">40〜44×2</span></td></tr>
+<tr class=""><td class="h">23時台</td><td style="color:#b050a0;text-align:center">夜</td><td><b>2</b></td><td>0.2</td><td class="l"><span class="mini" style="width:3px;background:#b050a0"></span></td><td>26.9</td><td>22.7</td><td>31.0</td><td></td><td class="l"><span class="chip" style="background:#dbeafe;color:#1d4ed8">20〜24×1</span><span class="chip" style="background:#dcfce7;color:#15803d">30〜34×1</span></td></tr>
+</tbody><tfoot><tr class="sep"><td class="h">合計</td><td></td><td><b>577</b></td><td>72.1</td><td></td><td>28.3</td><td>3.7</td><td>86.1</td><td>42</td><td></td></tr></tfoot></table></div><div class="hm-subtitle" style="margin:10px 0 0">色付きの行＝ピーク時間帯。チップの色: 青〜29 / 緑30〜39 / 黄40〜49 / 赤50〜59 / 桃60+ km/h</div></div>
+<div class="card"><div class="panel-title">主なポイント</div><ul class="ins">
+<li><b>一番多いのは 12時台（54台）</b>。上位3つは 12時台(54)・9時台(52)・10時台(49) で、午前8時〜昼13時に全体の 46% が集中。</li>
+<li><b>深夜0〜5時にも 133台（1日 16.6台）</b>。平均 28.6 km/h で、夜間の物流トラックとみられる。</li>
+<li><b>速度が一番高い時間帯は 9時台（平均 32.4 km/h）</b>、一番低いのは 14時台（平均 22.8 km/h）。（10台以上ある時間帯で比較）</li>
+<li>6〜7時台は 15台と少なく、21〜23時台も 9台と通行が少ない。</li>
+</ul></div>
+<div class="footer-note">▲ 11/1 は計測開始日（午後のみ）のため除外。最高速度 86.1km/h などの60km/h以上は誤計測の可能性あり（写真で要確認）。</div>
+<script>
+function toggleTheme(){const r=document.documentElement;const isDark=r.dataset.theme==='dark'||(r.dataset.theme===''&&window.matchMedia('(prefers-color-scheme:dark)').matches);r.dataset.theme=isDark?'light':'dark';}
+</script>
+</div></body></html>
